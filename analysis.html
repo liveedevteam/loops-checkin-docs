@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Analysis — Loops Offline Check-in V2 UI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-primary: #1E3A8A;
+      --brand-secondary: #3B82F6;
+      --brand-accent: #93C5FD;
+      --brand-bg: #F0F9FF;
+      --red: #DC2626;
+      --red-light: #FEF2F2;
+      --red-border: #FECACA;
+      --orange: #D97706;
+      --orange-light: #FFFBEB;
+      --orange-border: #FDE68A;
+      --blue: #1D4ED8;
+      --blue-light: #EFF6FF;
+      --blue-border: #BFDBFE;
+      --gray: #6B7280;
+      --gray-light: #F9FAFB;
+      --gray-border: #E5E7EB;
+      --text: #111827;
+      --text-muted: #6B7280;
+      --surface: #FFFFFF;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--brand-bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* ── Layout ── */
+    .page-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      color: #fff;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-md);
+    }
+    .page-header .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      font-size: 14px;
+      opacity: 0.75;
+    }
+    .meta-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      font-size: 13px;
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .meta-item span { opacity: 0.6; }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .stat-card .count {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-card .desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .stat-card.red   .count { color: var(--red); }
+    .stat-card.orange .count { color: var(--orange); }
+    .stat-card.blue  .count { color: var(--blue); }
+    .stat-card.gray  .count { color: var(--gray); }
+
+    /* ── Priority Summary Table ── */
+    .summary-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 36px;
+      overflow: hidden;
+    }
+    .summary-card .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--gray-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .summary-card .card-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      text-align: left;
+      padding: 11px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      background: var(--gray-light);
+      border-bottom: 1px solid var(--gray-border);
+    }
+    td {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFAFA; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.high   { background: var(--red-light);    color: var(--red);    border: 1px solid var(--red-border); }
+    .badge.medium { background: var(--orange-light);  color: var(--orange); border: 1px solid var(--orange-border); }
+    .badge.low    { background: var(--blue-light);    color: var(--blue);   border: 1px solid var(--blue-border); }
+
+    /* ── Section headings ── */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 40px 0 16px;
+    }
+    .section-title .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .section-title .icon.red    { background: var(--red-light); }
+    .section-title .icon.orange { background: var(--orange-light); }
+    .section-title .icon.blue   { background: var(--blue-light); }
+    .section-title .icon.gray   { background: var(--gray-light); }
+    .section-title h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ── Issue Cards ── */
+    .issue-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      overflow: hidden;
+      border-left: 4px solid transparent;
+    }
+    .issue-card.high   { border-left-color: var(--red); }
+    .issue-card.medium { border-left-color: var(--orange); }
+    .issue-card.low    { border-left-color: var(--blue); }
+
+    .issue-header {
+      padding: 14px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .issue-header:hover { background: #FAFAFA; }
+
+    .issue-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .high   .issue-number { background: var(--red-light);    color: var(--red); }
+    .medium .issue-number { background: var(--orange-light);  color: var(--orange); }
+    .low    .issue-number { background: var(--blue-light);    color: var(--blue); }
+
+    .issue-title-area { flex: 1; }
+    .issue-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .issue-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    }
+
+    .issue-body {
+      padding: 0 20px 18px 56px;
+    }
+    .issue-body p {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .issue-body p:last-child { margin-bottom: 0; }
+
+    pre {
+      background: #1E293B;
+      color: #E2E8F0;
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      overflow-x: auto;
+      margin: 10px 0;
+      line-height: 1.55;
+    }
+    .comment { color: #64748B; }
+    .keyword { color: #93C5FD; }
+    .string  { color: #86EFAC; }
+    .fn      { color: #FDE68A; }
+
+    .file-ref {
+      display: inline-block;
+      background: var(--gray-light);
+      border: 1px solid var(--gray-border);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 12px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      color: var(--brand-primary);
+    }
+
+    .chevron {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details[open] .chevron { transform: rotate(90deg); }
+    details summary { list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-border);
+    }
+
+    @media (max-width: 600px) {
+      .page-header { padding: 28px 20px; }
+      .page-header h1 { font-size: 22px; }
+      td, th { padding: 10px 14px; }
+      .issue-body { padding-left: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="label">Software Analysis Report</div>
+    <h1>Loops Offline Check-in V2 UI</h1>
+    <p>A comprehensive code-quality and architecture review of the Next.js 15 PWA.</p>
+    <div class="meta-row">
+      <div class="meta-item"><span>Project</span> loops-offlinecheckinv2-ui</div>
+      <div class="meta-item"><span>Stack</span> Next.js 15 · React 19 · TypeScript · Tailwind CSS</div>
+      <div class="meta-item"><span>Date</span> 2026-06-05</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card red">
+      <div class="count">8</div>
+      <div class="desc">High Priority</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="count">7</div>
+      <div class="desc">Medium Priority</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="count">7</div>
+      <div class="desc">Low Priority</div>
+    </div>
+    <div class="stat-card gray">
+      <div class="count">22</div>
+      <div class="desc">Total Findings</div>
+    </div>
+  </div>
+
+  <!-- Priority Summary Table -->
+  <div class="summary-card">
+    <div class="card-header">
+      <h2>Priority Summary</h2>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Issue</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>db.close()</code> before transaction completes</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Silent data loss</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Direct state mutation on <code>useState</code> objects</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Stale UI, sync failures</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>result.data[0]</code> only updates first booking</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Partial state corruption</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>adjustSeats</code> reads wrong booking in secondary modal</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Wrong max seats enforced</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>localStorage</code> key mismatch on logout</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Cleanup never runs</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Logout does not clear IndexedDB</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Data leak between sessions</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>Input validation commented out on login</td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Empty API calls allowed</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>Dead code path — <code>checkAll</code> always <code>false</code></td>
+          <td>Bug</td>
+          <td><span class="badge high">High</span></td>
+          <td>Feature broken</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>600+ lines of commented-out dead code</td>
+          <td>Code Quality</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Severe readability</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>Auto-sync logic copy-pasted across 3 pages</td>
+          <td>Architecture</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Maintenance risk</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>handleConfirmCheckIn</code> duplicated across pages</td>
+          <td>Architecture</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Maintenance risk</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>QRProcessor.checkInPassenger</code> broken and unused</td>
+          <td>Code Quality</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Dead weight</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><code>type: any</code> on all page state</td>
+          <td>Code Quality</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Type safety lost</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><code>console.log</code> left in production</td>
+          <td>Code Quality</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Data leakage</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><code>saveToIndexedDB</code> re-defined in login page</td>
+          <td>Architecture</td>
+          <td><span class="badge medium">Medium</span></td>
+          <td>Duplicate implementation</td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>No shared state — each page reads IndexedDB independently</td>
+          <td>Architecture</td>
+          <td><span class="badge low">Low</span></td>
+          <td>Inconsistency risk</td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td><code>NEXT_PUBLIC_API</code> has no null check or startup guard</td>
+          <td>Architecture</td>
+          <td><span class="badge low">Low</span></td>
+          <td>Silent misconfiguration</td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td>Mock data runs on every production page load</td>
+          <td>Code Quality</td>
+          <td><span class="badge low">Low</span></td>
+          <td>Wasteful</td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td><code>alert()</code> used for all errors</td>
+          <td>UX</td>
+          <td><span class="badge low">Low</span></td>
+          <td>Poor mobile UX</td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td>No offline / online status indicator</td>
+          <td>UX</td>
+          <td><span class="badge low">Low</span></td>
+          <td>No sync visibility</td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td>Phone number rendered twice in multiple-bookings modal</td>
+          <td>UX</td>
+          <td><span class="badge low">Low</span></td>
+          <td>Confusing UI</td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td>Success modal hardcodes "1 seat" text</td>
+          <td>UX</td>
+          <td><span class="badge low">Low</span></td>
+          <td>Incorrect feedback</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Section 1: Bugs ── -->
+  <div class="section-title">
+    <div class="icon red">🐛</div>
+    <h2>Bugs — Will Cause Incorrect Behavior</h2>
+  </div>
+
+  <!-- Bug 1 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">1</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>db.close()</code> called before transaction completes</div>
+            <div class="issue-meta">lib/indexedDB.ts : 43, 79</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>In both <span class="file-ref">getDataFromIndexedDB</span> and <span class="file-ref">updateDataInIndexedDB</span>, <code>db.close()</code> is called inside <code>request.onsuccess</code> — before the transaction has completed. An open IndexedDB transaction holds a lock on the database. Closing the connection while a transaction is still active can abort the write silently with no error thrown.</p>
+        <p>The fix is to move <code>db.close()</code> into the <code>transaction.oncomplete</code> callback, guaranteeing the write has finished before the connection is released.</p>
+        <pre><span class="comment">// ❌ Current — db closed before put() finishes</span>
+<span class="fn">request</span>.onsuccess = () => {
+  <span class="keyword">const</span> db = request.result
+  <span class="keyword">const</span> tx = db.transaction([storeName], <span class="string">"readwrite"</span>)
+  tx.objectStore(storeName).put(data)
+  db.close()  <span class="comment">// too early</span>
+}
+
+<span class="comment">// ✅ Fix — close only after the transaction commits</span>
+<span class="fn">request</span>.onsuccess = () => {
+  <span class="keyword">const</span> db = request.result
+  <span class="keyword">const</span> tx = db.transaction([storeName], <span class="string">"readwrite"</span>)
+  tx.objectStore(storeName).put(data)
+  tx.oncomplete = () => { db.close(); resolve(<span class="keyword">true</span>) }
+}</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 2 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">2</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Direct mutation of <code>useState</code> objects</div>
+            <div class="issue-meta">main/page.tsx : 316, 337 · checkin/page.tsx : 123 · phone-checkin/page.tsx : 313</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>State objects are mutated directly without calling their setter functions. React compares object references to decide whether to re-render. Because the reference does not change, the component never re-renders — leaving the progress counter, sync queue, and booking list showing stale data.</p>
+        <pre><span class="comment">// ❌ Current — mutates the object in place, React won't re-render</span>
+listTicket.data = []
+retrievedData.data = updatedData
+
+<span class="comment">// ✅ Fix — always produce new object references</span>
+setListTicket({ ...listTicket, data: [] })
+setRetrievedData({ ...retrievedData, data: updatedData })</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 3 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">3</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Sync only updates <code>result.data[0]</code></div>
+            <div class="issue-meta">checkin/page.tsx : 127 · phone-checkin/page.tsx : 316</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>After a successful API call, only <code>result.data[0]</code> is applied back to the local IndexedDB booking cache. The API returns the full array of updated bookings — but this code discards everything after the first item. If the auto-sync interval fires with multiple pending entries, only the first booking's <code>checkInHistory</code> is persisted locally.</p>
+        <pre><span class="comment">// ❌ Current — ignores all updated bookings except the first</span>
+<span class="keyword">const</span> updatedItem = result.data[0]
+updatedData[index] = updatedItem
+
+<span class="comment">// ✅ Fix — loop over every returned booking and apply each</span>
+<span class="keyword">for</span> (<span class="keyword">const</span> updatedItem <span class="keyword">of</span> result.data) {
+  <span class="keyword">const</span> i = updatedData.findIndex(b => b._id === updatedItem._id)
+  <span class="keyword">if</span> (i !== -1) updatedData[i] = updatedItem
+}</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 4 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">4</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>adjustSeats</code> reads wrong booking in secondary modal</div>
+            <div class="issue-meta">components/checkin-modal.tsx : 108–119</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>When the <code>showSeatSelection</code> secondary view is active (triggered from the multiple-bookings list), the +/- buttons call the parent-scope <code>adjustSeats</code> function. That function derives its maximum from <code>data.data</code> — the top-level booking prop — instead of <code>currentBooking</code>, which is the booking the user actually selected. The enforcement is therefore against the wrong seat count.</p>
+        <pre><span class="comment">// adjustSeats in the parent scope:</span>
+<span class="keyword">const</span> <span class="fn">adjustSeats</span> = (delta: number) => {
+  <span class="keyword">const</span> checkedIn = data.data?.checkInHistory?.reduce(...)  <span class="comment">// ← data.data, not currentBooking</span>
+  <span class="keyword">const</span> maxSelectable = (data.data?.seats || 0) - checkedIn   <span class="comment">// ← wrong booking</span>
+  ...
+}</pre>
+        <p>The secondary modal should derive its own max from <code>currentBooking</code> and either pass a local adjustment handler or pass <code>currentBooking</code> to <code>adjustSeats</code>.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 5 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">5</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>localStorage</code> key mismatch on logout</div>
+            <div class="issue-meta">app/page.tsx : 95 · app/main/page.tsx : 349–351</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>Login writes the route code with the key <code>"routecode"</code> (lowercase <em>c</em>). Logout tries to remove <code>"routeCode"</code> (uppercase <em>C</em>) along with two other keys (<code>"checkInProgress"</code>, <code>"checkedInPassengers"</code>) that are never written in the current code. The actual key is never cleaned up.</p>
+        <pre><span class="comment">// Login (app/page.tsx:95)</span>
+localStorage.setItem(<span class="string">"routecode"</span>, routeCode)   <span class="comment">// lowercase 'c'</span>
+
+<span class="comment">// Logout (main/page.tsx:349-351)</span>
+localStorage.removeItem(<span class="string">"routeCode"</span>)            <span class="comment">// uppercase 'C' — key doesn't exist</span>
+localStorage.removeItem(<span class="string">"checkInProgress"</span>)      <span class="comment">// never set</span>
+localStorage.removeItem(<span class="string">"checkedInPassengers"</span>)   <span class="comment">// never set</span></pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 6 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">6</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Logout does not clear IndexedDB</div>
+            <div class="issue-meta">app/main/page.tsx : 349–354</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p><code>handleLogout</code> clears a few localStorage keys and navigates to <code>/</code>. It never calls <code>indexedDB.deleteDatabase("checkin")</code>. The next person who picks up the device will see the previous session's full booking list, passenger names, and phone numbers until they successfully log in with a new route code.</p>
+        <p>For a shared staff device, this is a privacy concern. The <code>clearDB()</code> function already exists in <span class="file-ref">app/page.tsx</span> — it should also be called on logout.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 7 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">7</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Input validation commented out on login</div>
+            <div class="issue-meta">app/page.tsx : 55</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The guard that prevents empty form submission was commented out. The <code>required</code> HTML attribute is the only safeguard, which can be bypassed with browser developer tools or a direct API call. An empty route code will fire a real API request to <code>/bookings/adm/round/</code>.</p>
+        <pre><span class="comment">// ❌ Currently commented out</span>
+<span class="comment">// if (!routeCode.trim()) return</span>
+
+<span class="comment">// ✅ Restore this guard</span>
+<span class="keyword">if</span> (!routeCode.trim()) <span class="keyword">return</span></pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Bug 8 -->
+  <div class="issue-card high">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">8</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Dead code path — <code>checkAll</code> is always <code>false</code></div>
+            <div class="issue-meta">app/checkin/page.tsx : 41–79</div>
+          </div>
+          <span class="badge high">High</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The "All Seats Checked In" modal state is unreachable. <code>checkAll</code> is initialized to <code>false</code> and the line that would update it was commented out. The <code>else if (checkAll)</code> branch can never execute.</p>
+        <pre><span class="keyword">let</span> checkAll = <span class="keyword">false</span>
+
+<span class="comment">// This line was commented out:</span>
+<span class="comment">// checkAll = retrievedData.data.every(v => v.checkinStatus === true)</span>
+
+} <span class="keyword">else if</span> (checkAll) {   <span class="comment">// always false — dead branch</span>
+  setModalData({ type: <span class="string">"success"</span>, message: <span class="string">'All Seat checkin'</span> })
+}</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- ── Section 2: Code Quality ── -->
+  <div class="section-title">
+    <div class="icon orange">🔧</div>
+    <h2>Code Quality</h2>
+  </div>
+
+  <!-- Issue 9 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">9</div>
+          <div class="issue-title-area">
+            <div class="issue-title">600+ lines of commented-out dead code</div>
+            <div class="issue-meta">main/page.tsx : 1–257 · phone-checkin/page.tsx : 1–224 · qr-processor.ts : processQRCode method</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>Three files each contain their entire previous version as a comment block. This nearly doubles the apparent size of the codebase, making it difficult to navigate and understand what code is actually running. These files should be deleted — git history preserves the old versions and is the correct tool for reviewing past code.</p>
+        <p>Affected files and line counts of dead code: <span class="file-ref">main/page.tsx</span> lines 1–257, <span class="file-ref">phone-checkin/page.tsx</span> lines 1–224, <span class="file-ref">qr-processor.ts</span> <code>processQRCode</code> method (~90 lines), and multiple commented-out card blocks in <span class="file-ref">checkin/page.tsx</span>.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 10 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">10</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Auto-sync logic copy-pasted across three pages</div>
+            <div class="issue-meta">main/page.tsx : 309–340 · checkin/page.tsx : 177–208 · phone-checkin/page.tsx : 366–393</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The exact same 32-line <code>setInterval</code> block (read listticket → call API → clear queue → update booking store) is duplicated verbatim in every page. Any bug fix or behavioral change must be applied in three separate places. This is a strong candidate for extraction into a custom hook, e.g. <code>useAutoSync()</code>.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 11 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">11</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>handleConfirmCheckIn</code> duplicated across pages</div>
+            <div class="issue-meta">checkin/page.tsx : 111–162 · phone-checkin/page.tsx : 301–352</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The check-in confirmation handler (~50 lines) is identical in both pages: find item by ID, build body, push to listticket, call API, update booking store. A single shared function — ideally inside <code>QRProcessor.checkInPassenger</code> which already exists for this purpose — would eliminate the duplication.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 12 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">12</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>QRProcessor.checkInPassenger</code> is broken and unused</div>
+            <div class="issue-meta">lib/qr-processor.ts : 321–358</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>This method was written to centralise check-in logic but was never wired up. It also has a bug: it calls <code>listticket.push(body)</code> directly, but the IndexedDB record is shaped as <code>{ id: 1, data: [] }</code> — it should be <code>listticket.data.push(body)</code>. Either fix and adopt this method (eliminating duplication #11), or delete it.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 13 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">13</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>type: any</code> on all page-level state</div>
+            <div class="issue-meta">All page components</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>Every page uses <code>useState&lt;any&gt;</code> for its core data. TypeScript types for <code>Booking</code>, <code>CheckInHistory</code>, and <code>VehicleInfo</code> are already defined in <span class="file-ref">types/bookings.type.ts</span>. Using them would have caught bugs #3, #4, and #12 at compile time.</p>
+        <pre><span class="comment">// ❌ Current</span>
+<span class="keyword">const</span> [retrievedData, setRetrievedData] = useState&lt;<span class="keyword">any</span>&gt;(<span class="keyword">null</span>)
+<span class="keyword">const</span> [routeCode, setRouteCode] = useState&lt;<span class="keyword">any</span>&gt;(<span class="keyword">null</span>)
+
+<span class="comment">// ✅ Fix — use the existing types</span>
+<span class="keyword">const</span> [retrievedData, setRetrievedData] = useState&lt;{ id: number; data: Booking[] } | <span class="keyword">null</span>&gt;(<span class="keyword">null</span>)
+<span class="keyword">const</span> [routeCode, setRouteCode] = useState&lt;{ id: number; code: string } | <span class="keyword">null</span>&gt;(<span class="keyword">null</span>)</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 14 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">14</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>console.log</code> left in production</div>
+            <div class="issue-meta">app/phone-checkin/page.tsx : 357</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>A debug statement <code>console.log(retrievedData)</code> was left inside a <code>useEffect</code>. This logs the entire booking list — including all passenger phone numbers — to the browser console on every render cycle in production.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 15 -->
+  <div class="issue-card medium">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">15</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>saveToIndexedDB</code> re-defined locally in login page</div>
+            <div class="issue-meta">app/page.tsx : 14–38</div>
+          </div>
+          <span class="badge medium">Medium</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The login page defines its own private <code>saveToIndexedDB</code> (25 lines) instead of importing <code>updateDataInIndexedDB</code> from <span class="file-ref">lib/indexedDB.ts</span>. This creates two separate implementations of the same operation with slightly different error handling, increasing maintenance surface.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ── Section 3: Architecture ── -->
+  <div class="section-title">
+    <div class="icon blue">🏗️</div>
+    <h2>Architecture</h2>
+  </div>
+
+  <!-- Issue 16 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">16</div>
+          <div class="issue-title-area">
+            <div class="issue-title">No shared state — each page reads IndexedDB independently</div>
+            <div class="issue-meta">All page components</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>Every page component re-reads all three IndexedDB stores from scratch in its own <code>useEffect</code>. There is no reactive layer (React Context, Zustand, or even a shared module-level cache). The UI is only correct because page navigation causes a full remount. If the app ever needs real-time updates within a page — or if two components on the same page needed the same data — this pattern would break.</p>
+        <p>Recommended approach: a lightweight React Context (<code>BookingContext</code>) that loads once on app start and exposes typed getters and mutation helpers. This would also eliminate the need for every page to duplicate the IndexedDB read/write logic.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 17 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">17</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>NEXT_PUBLIC_API</code> has no null check or startup guard</div>
+            <div class="issue-meta">lib/patchDataToAPI.ts · app/page.tsx : 60</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>If the environment variable is missing or empty, <code>axios.patch(undefined + "/bookings/adm/check-in")</code> will fail with a confusing network error rather than a clear configuration message. A simple check at module load time or in the app layout would surface this immediately during development or a misconfigured deploy.</p>
+        <pre><span class="comment">// Suggested guard in lib/patchDataToAPI.ts</span>
+<span class="keyword">if</span> (!process.env.NEXT_PUBLIC_API) {
+  <span class="keyword">throw new</span> Error(<span class="string">"NEXT_PUBLIC_API environment variable is not set"</span>)
+}</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 18 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">18</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Mock data initializes on every production page load</div>
+            <div class="issue-meta">lib/qr-processor.ts : 43–157</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p><code>QRProcessor.getInstance()</code> is called on every page that uses phone search. The constructor runs <code>initializeMockData()</code> which builds two <code>Map</code> structures containing hardcoded test passengers. This data is never used in production but consumes memory on every app session. The mock data and related dev helpers (<code>generateTestQRCode</code>, <code>getTestPhoneNumbers</code>) should be tree-shaken or moved behind a <code>process.env.NODE_ENV === 'development'</code> guard.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ── Section 4: UX ── -->
+  <div class="section-title">
+    <div class="icon gray">🎨</div>
+    <h2>UX Issues</h2>
+  </div>
+
+  <!-- Issue 19 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">19</div>
+          <div class="issue-title-area">
+            <div class="issue-title"><code>alert()</code> used for all login errors</div>
+            <div class="issue-meta">app/page.tsx : 66, 72, 99</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>Native <code>window.alert()</code> is blocking, cannot be styled, and renders poorly on mobile devices — especially when the app is installed as a PWA in standalone mode. The project already imports Shadcn's <code>useToast</code> hook and has the toast infrastructure wired up. Errors should use that system or an inline error message below the input field.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 20 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">20</div>
+          <div class="issue-title-area">
+            <div class="issue-title">No offline/online status indicator</div>
+            <div class="issue-meta">app/main/page.tsx</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The app's core value proposition is offline-first operation, but the UI gives staff no visibility into whether they are currently online, how many check-ins are queued and waiting to sync, or when the last successful sync occurred. A small status bar — e.g. "● Online · Last sync: 3s ago" or "● Offline · 4 pending" — would significantly improve staff confidence during operations.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 21 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">21</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Phone number rendered twice in multiple-bookings modal</div>
+            <div class="issue-meta">components/checkin-modal.tsx : 183, 187</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>In the multiple-bookings list, each booking row shows <code>booking.telephoneNumber</code> as both the primary label and the small secondary label — twice the same value. The primary label should show a passenger identifier or the booking's date/time, while the secondary could show the phone or order number.</p>
+        <pre><span class="comment">&lt;!-- ❌ Current: phone shown twice --&gt;</span>
+&lt;p class="font-medium"&gt;{booking.telephoneNumber}&lt;/p&gt;
+&lt;p class="text-sm"&gt;{booking.orderNumber} - {booking.seats} seat(s)&lt;/p&gt;
+&lt;p class="text-xs"&gt;{booking.telephoneNumber}&lt;/p&gt;   &lt;!-- duplicate --&gt;</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Issue 22 -->
+  <div class="issue-card low">
+    <details>
+      <summary>
+        <div class="issue-header">
+          <div class="issue-number">22</div>
+          <div class="issue-title-area">
+            <div class="issue-title">Success modal hardcodes "1 seat" text</div>
+            <div class="issue-meta">components/checkin-modal.tsx : 248</div>
+          </div>
+          <span class="badge low">Low</span>
+          <div class="chevron">▶</div>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <p>The single-seat confirmation view displays the hardcoded text "ขึ้นรถได้ 1 ที่นั่ง" regardless of how many seats were actually confirmed. For a booking where all remaining seats are checked in at once, the user sees an inaccurate count. The text should interpolate the actual <code>selectedSeats</code> value.</p>
+        <pre><span class="comment">&lt;!-- ❌ Current --&gt;</span>
+&lt;p&gt;ขึ้นรถได้ 1 ที่นั่ง&lt;/p&gt;
+
+<span class="comment">&lt;!-- ✅ Fix --&gt;</span>
+&lt;p&gt;ขึ้นรถได้ {selectedSeats} ที่นั่ง&lt;/p&gt;</pre>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer">
+    Loops Offline Check-in V2 UI · Code Analysis Report · Generated 2026-06-05
+  </div>
+
+</div>
+</body>
+</html>
