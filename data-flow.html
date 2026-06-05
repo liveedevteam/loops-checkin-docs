@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Flow — Loops Check-in Docs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4ff; color: #1e2a4a; }
+    header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 36px 24px 52px; }
+    header .breadcrumb { font-size: 0.8rem; opacity: 0.75; margin-bottom: 10px; }
+    header .breadcrumb a { color: white; text-decoration: none; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+    nav { background: white; border-bottom: 1px solid #dde6ff; padding: 0 24px; display: flex; overflow-x: auto; justify-content: center; }
+    nav a { padding: 14px 18px; font-size: 0.875rem; font-weight: 500; color: #4b5a8a; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    nav a:hover { color: #1e3a8a; border-bottom-color: #3b82f6; }
+    nav a.active { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+    main { max-width: 960px; margin: -24px auto 48px; padding: 0 24px; }
+    .section-title { font-size: 1.15rem; font-weight: 600; color: #1e2a4a; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e7ff; }
+    /* Sequence diagram */
+    .seq { background: white; border-radius: 12px; border: 1px solid #e0e7ff; padding: 32px 24px; overflow-x: auto; }
+    .seq-actors { display: flex; justify-content: space-around; margin-bottom: 0; min-width: 620px; }
+    .actor { text-align: center; min-width: 100px; }
+    .actor-box { display: inline-block; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; border: 2px solid; }
+    .actor-line-container { display: flex; justify-content: space-around; min-width: 620px; position: relative; }
+    .actor-line { width: 1px; background: #cbd5e1; margin: 0 auto; }
+    .seq-messages { position: relative; min-width: 620px; }
+    .msg-row { display: grid; align-items: center; margin-bottom: 4px; padding: 3px 0; }
+    .msg-row.step-1 { grid-template-columns: 1fr 4fr 1fr 4fr 1fr; }
+    .msg-line { height: 2px; position: relative; }
+    .msg-line::after { content: '▶'; position: absolute; right: -7px; top: -8px; font-size: 10px; }
+    .msg-line.left::after { content: '◀'; left: -7px; right: auto; }
+    .msg-label { font-size: 0.72rem; text-align: center; background: white; padding: 1px 6px; border-radius: 4px; position: relative; z-index: 1; white-space: nowrap; }
+    .lifeline-segments { display: flex; justify-content: space-around; min-width: 620px; }
+    .lifeline { width: 1px; background: repeating-linear-gradient(to bottom, #cbd5e1 0px, #cbd5e1 4px, transparent 4px, transparent 8px); }
+    /* Message flow table */
+    .flow-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #e0e7ff; }
+    .flow-table th { padding: 10px 18px; font-size: 0.75rem; font-weight: 600; color: #6b7a9a; text-transform: uppercase; background: #f5f8ff; border-bottom: 1px solid #e0e7ff; text-align: left; }
+    .flow-table td { padding: 12px 18px; font-size: 0.85rem; border-bottom: 1px solid #f0f4ff; vertical-align: top; }
+    .flow-table tr:last-child td { border: none; }
+    .flow-table tr:hover td { background: #fafbff; }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 0.72rem; font-weight: 700; color: white; background: #3b82f6; flex-shrink: 0; }
+    .arrow-right { color: #3b82f6; font-weight: 700; }
+    .arrow-left { color: #16a34a; font-weight: 700; }
+    .method { font-family: monospace; background: #f0f4ff; padding: 1px 5px; border-radius: 4px; font-size: 0.8rem; color: #3b82f6; }
+    .endpoint { font-family: monospace; background: #fff7ed; padding: 2px 7px; border-radius: 4px; font-size: 0.8rem; color: #c2410c; }
+    .store { font-family: monospace; background: #f0fdf4; padding: 2px 7px; border-radius: 4px; font-size: 0.8rem; color: #16a34a; }
+    /* Swimlane */
+    .swimlane { border-radius: 12px; overflow: hidden; border: 1px solid #e0e7ff; margin-bottom: 16px; }
+    .swimlane-header { padding: 10px 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .swimlane-body { padding: 16px 20px; background: white; }
+    .swimlane-body p { font-size: 0.85rem; color: #4b5a8a; line-height: 1.6; }
+    .swimlane-body ul { font-size: 0.85rem; color: #4b5a8a; line-height: 1.9; padding-left: 18px; }
+    footer { text-align: center; padding: 32px; color: #9aa3c0; font-size: 0.8rem; border-top: 1px solid #e0e7ff; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="breadcrumb"><a href="index.html">Docs</a> / Data Flow</div>
+    <h1>Data Flow Architecture Diagram</h1>
+    <p>How data moves between the browser, IndexedDB, and the backend API</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="key-features.html">Key Features</a>
+    <a href="user-flow.html">User Flow</a>
+    <a href="data-model.html">Data Model</a>
+    <a href="system-architecture.html">System Architecture</a>
+    <a href="data-flow.html" class="active">Data Flow</a>
+    <a href="pwa-infrastructure.html">PWA Infrastructure</a>
+  </nav>
+
+  <main>
+    <p class="section-title" style="margin-top:36px;">Full Data Flow — Step by Step</p>
+
+    <div style="background:white;border-radius:12px;border:1px solid #e0e7ff;padding:28px;overflow-x:auto;">
+      <!-- ASCII-style flow diagram -->
+      <div style="font-family:monospace;font-size:0.82rem;line-height:1;min-width:600px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;gap:8px;">
+          <div style="text-align:center;flex:1;"><div style="background:#1e3a8a;color:white;padding:8px;border-radius:6px;font-weight:600;">Staff Device</div></div>
+          <div style="text-align:center;flex:1;"><div style="background:#16a34a;color:white;padding:8px;border-radius:6px;font-weight:600;">IndexedDB</div></div>
+          <div style="text-align:center;flex:1;"><div style="background:#c2410c;color:white;padding:8px;border-radius:6px;font-weight:600;">Backend API</div></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;color:#94a3b8;font-size:0.75rem;margin-bottom:0;gap:8px;">
+          <div style="flex:1;text-align:center;">│</div>
+          <div style="flex:1;text-align:center;">│</div>
+          <div style="flex:1;text-align:center;">│</div>
+        </div>
+
+        <!-- Phase 1: Login -->
+        <div style="background:#eff6ff;border-left:3px solid #3b82f6;padding:8px 12px;margin:4px 0;border-radius:0 6px 6px 0;font-size:0.78rem;color:#1e40af;font-weight:600;">PHASE 1 — Session Initialization (Login)</div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">Enter route code</div>
+          <div style="text-align:center;color:#c2410c;">→</div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;color:#c2410c;">→</div>
+          <div style="font-size:0.75rem;color:#c2410c;background:#fff7ed;padding:3px 8px;border-radius:4px;">GET /bookings/adm/round/:code</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;"></div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;color:#16a34a;">←</div>
+          <div style="font-size:0.75rem;color:#16a34a;">Booking[] response</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">clearDB() + save all data</div>
+          <div style="text-align:center;color:#16a34a;">→</div>
+          <div style="font-size:0.75rem;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:4px;">routecode, booking, listticket stores</div>
+          <div style="text-align:center;"></div>
+          <div></div>
+        </div>
+
+        <div style="color:#94a3b8;font-size:0.75rem;text-align:left;padding-left:8px;margin:6px 0;">↓</div>
+
+        <!-- Phase 2: Check-in -->
+        <div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:8px 12px;margin:4px 0;border-radius:0 6px 6px 0;font-size:0.78rem;color:#166534;font-weight:600;">PHASE 2 — Check-in Action (Offline)</div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">Scan QR or enter phone</div>
+          <div style="text-align:center;color:#16a34a;">→</div>
+          <div style="font-size:0.75rem;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:4px;">Read booking store (key=1)</div>
+          <div style="text-align:center;"></div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">Match orderNumber / telephoneNumber</div>
+          <div style="text-align:center;color:#1e3a8a;">←</div>
+          <div style="font-size:0.75rem;color:#1e3a8a;background:#eff6ff;padding:3px 8px;border-radius:4px;">Return matching Booking record</div>
+          <div style="text-align:center;"></div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">Staff confirms seats</div>
+          <div style="text-align:center;color:#16a34a;">→</div>
+          <div style="font-size:0.75rem;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:4px;">Append to listticket queue</div>
+          <div style="text-align:center;"></div>
+          <div></div>
+        </div>
+
+        <div style="color:#94a3b8;font-size:0.75rem;text-align:left;padding-left:8px;margin:6px 0;">↓</div>
+
+        <!-- Phase 3: Sync -->
+        <div style="background:#fff7ed;border-left:3px solid #f59e0b;padding:8px 12px;margin:4px 0;border-radius:0 6px 6px 0;font-size:0.78rem;color:#92400e;font-weight:600;">PHASE 3 — Background Sync (every 5 s, when online)</div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">Sync timer fires</div>
+          <div style="text-align:center;color:#16a34a;">→</div>
+          <div style="font-size:0.75rem;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:4px;">Read listticket + routecode</div>
+          <div style="text-align:center;"></div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">patchDataToAPI()</div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;color:#c2410c;">→</div>
+          <div style="font-size:0.75rem;color:#c2410c;background:#fff7ed;padding:3px 8px;border-radius:4px;">PATCH /bookings/adm/check-in</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;"></div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;"></div>
+          <div style="text-align:center;color:#16a34a;">←</div>
+          <div style="font-size:0.75rem;color:#16a34a;">Updated Booking[] (with new checkInHistory)</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:6px 0;gap:4px;">
+          <div style="text-align:right;font-size:0.75rem;color:#6b7a9a;">Clear queue, update state</div>
+          <div style="text-align:center;color:#16a34a;">→</div>
+          <div style="font-size:0.75rem;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:4px;">Write updated booking + empty listticket</div>
+          <div style="text-align:center;"></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title">Detailed Message Table</p>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Message / Action</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="step-num">1</span></td>
+          <td>Staff (Login page)</td>
+          <td><span style="color:#c2410c;">Backend API</span></td>
+          <td><span class="endpoint">GET /bookings/adm/round/:code</span></td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Fetches all bookings for the route. Requires internet.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">2</span></td>
+          <td><span style="color:#c2410c;">Backend API</span></td>
+          <td>Login page</td>
+          <td><code style="font-size:0.8rem;">Booking[]</code> JSON array</td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Returns all bookings. App derives <code>checkinStatus</code> locally.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">3</span></td>
+          <td>Login page</td>
+          <td><span class="store">IndexedDB</span></td>
+          <td>clearDB() then write <code>routecode</code>, <code>booking</code>, <code>listticket</code></td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Old session data is completely wiped before writing new session.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">4</span></td>
+          <td>Check-in / Phone pages</td>
+          <td><span class="store">IndexedDB</span></td>
+          <td><span class="method">getDataFromIndexedDB("booking")</span></td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Loads booking array into React state on mount.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">5</span></td>
+          <td>QRScanner / PhoneSearch</td>
+          <td>In-memory state</td>
+          <td>Filter <code>booking.data[]</code> by orderNumber or telephoneNumber</td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Pure local lookup — no network call needed.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">6</span></td>
+          <td>CheckInModal (Confirm)</td>
+          <td><span class="store">IndexedDB</span></td>
+          <td>Push <code>{ orderNumber, seats }</code> to <span class="store">listticket</span> store</td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Immediately persisted so it survives page reload.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">7</span></td>
+          <td>Sync timer (5 s)</td>
+          <td><span style="color:#c2410c;">Backend API</span></td>
+          <td><span class="endpoint">PATCH /bookings/adm/check-in</span> with <code>{ checkInCode, checkList }</code></td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Batches all pending tickets. Skipped when queue is empty or offline.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">8</span></td>
+          <td><span style="color:#c2410c;">Backend API</span></td>
+          <td>Sync timer</td>
+          <td>Updated <code>Booking[]</code> with new <code>checkInHistory</code></td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Contains the server-confirmed check-in records.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num">9</span></td>
+          <td>Sync timer</td>
+          <td><span class="store">IndexedDB</span></td>
+          <td>Write merged <code>booking</code> back + empty <code>listticket</code></td>
+          <td style="color:#6b7a9a;font-size:0.8rem;">Booking state is now consistent with the server.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="section-title">Offline Queue Strategy</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-wrap:wrap;">
+      <div class="swimlane">
+        <div class="swimlane-header" style="background:#fff7ed;border-bottom:1px solid #fed7aa;">
+          <span style="font-size:18px;">📴</span>
+          <span style="color:#c2410c;">When offline</span>
+        </div>
+        <div class="swimlane-body">
+          <ul>
+            <li>Check-in actions succeed locally</li>
+            <li>Entries accumulate in <code>listticket</code></li>
+            <li>UI updates from local state</li>
+            <li>Sync timer fires but silently fails</li>
+            <li>Queue persists in IndexedDB across reloads</li>
+          </ul>
+        </div>
+      </div>
+      <div class="swimlane">
+        <div class="swimlane-header" style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;">
+          <span style="font-size:18px;">🌐</span>
+          <span style="color:#166534;">When back online</span>
+        </div>
+        <div class="swimlane-body">
+          <ul>
+            <li>Next 5-second tick detects non-empty queue</li>
+            <li>Full batch is sent to the API in one PATCH</li>
+            <li>On success: queue cleared, local DB updated</li>
+            <li>Server and local state become consistent</li>
+            <li>Progress display refreshes from new data</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Loops Offline Check-in V2 — Documentation &nbsp;·&nbsp; 2026-06-05</footer>
+</body>
+</html>

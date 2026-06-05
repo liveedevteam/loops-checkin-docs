@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Architecture — Loops Check-in Docs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4ff; color: #1e2a4a; }
+    header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 36px 24px 52px; }
+    header .breadcrumb { font-size: 0.8rem; opacity: 0.75; margin-bottom: 10px; }
+    header .breadcrumb a { color: white; text-decoration: none; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+    nav { background: white; border-bottom: 1px solid #dde6ff; padding: 0 24px; display: flex; overflow-x: auto; justify-content: center; }
+    nav a { padding: 14px 18px; font-size: 0.875rem; font-weight: 500; color: #4b5a8a; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    nav a:hover { color: #1e3a8a; border-bottom-color: #3b82f6; }
+    nav a.active { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+    main { max-width: 960px; margin: -24px auto 48px; padding: 0 24px; }
+    .section-title { font-size: 1.15rem; font-weight: 600; color: #1e2a4a; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e7ff; }
+    /* Layer diagram */
+    .arch-layer { border-radius: 10px; border: 2px solid; padding: 16px 20px; margin-bottom: 2px; position: relative; }
+    .arch-layer-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .arch-layer-content { display: flex; flex-wrap: wrap; gap: 8px; }
+    .arch-chip { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+    .connector-arrow { text-align: center; color: #94a3b8; font-size: 1.2rem; line-height: 1; padding: 4px 0; }
+    /* File tree */
+    .file-tree { background: #1e2a4a; border-radius: 10px; padding: 20px 24px; font-family: monospace; font-size: 0.83rem; color: #e0e7ff; line-height: 2; overflow-x: auto; }
+    .file-tree .dir { color: #93c5fd; }
+    .file-tree .file { color: #d1fae5; }
+    .file-tree .comment { color: #94a3b8; }
+    /* Component cards */
+    .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .comp-card { background: white; border-radius: 10px; border: 1px solid #e0e7ff; padding: 20px; }
+    .comp-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; font-family: monospace; color: #1e3a8a; }
+    .comp-card p { font-size: 0.8rem; color: #6b7a9a; line-height: 1.6; }
+    .comp-card .path { font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px; }
+    /* Tech table */
+    .tech-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #e0e7ff; }
+    .tech-table th { padding: 10px 20px; font-size: 0.75rem; font-weight: 600; color: #6b7a9a; text-transform: uppercase; background: #f5f8ff; border-bottom: 1px solid #e0e7ff; text-align: left; }
+    .tech-table td { padding: 11px 20px; font-size: 0.875rem; border-bottom: 1px solid #f0f4ff; }
+    .tech-table tr:last-child td { border: none; }
+    footer { text-align: center; padding: 32px; color: #9aa3c0; font-size: 0.8rem; border-top: 1px solid #e0e7ff; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="breadcrumb"><a href="index.html">Docs</a> / System Architecture</div>
+    <h1>System Architecture Overview</h1>
+    <p>Layers, components, utilities, and external integrations</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="key-features.html">Key Features</a>
+    <a href="user-flow.html">User Flow</a>
+    <a href="data-model.html">Data Model</a>
+    <a href="system-architecture.html" class="active">System Architecture</a>
+    <a href="data-flow.html">Data Flow</a>
+    <a href="pwa-infrastructure.html">PWA Infrastructure</a>
+  </nav>
+
+  <main>
+    <p class="section-title" style="margin-top:36px;">Layered Architecture</p>
+    <div style="background:white;border-radius:12px;border:1px solid #e0e7ff;padding:28px;">
+
+      <div class="arch-layer" style="border-color:#93c5fd;background:#eff6ff;">
+        <div class="arch-layer-label" style="color:#1e40af;">External Layer</div>
+        <div class="arch-layer-content">
+          <span class="arch-chip" style="background:#dbeafe;color:#1d4ed8;">REST API — /bookings/adm/round/:code</span>
+          <span class="arch-chip" style="background:#dbeafe;color:#1d4ed8;">PATCH /bookings/adm/check-in</span>
+          <span class="arch-chip" style="background:#dbeafe;color:#1d4ed8;">Device Camera (getUserMedia)</span>
+        </div>
+      </div>
+      <div class="connector-arrow">↕</div>
+
+      <div class="arch-layer" style="border-color:#86efac;background:#f0fdf4;">
+        <div class="arch-layer-label" style="color:#166534;">PWA Shell Layer</div>
+        <div class="arch-layer-content">
+          <span class="arch-chip" style="background:#dcfce7;color:#166534;">Service Worker (sw.js)</span>
+          <span class="arch-chip" style="background:#dcfce7;color:#166534;">Cache API (loops-checkin-v2.1)</span>
+          <span class="arch-chip" style="background:#dcfce7;color:#166534;">Web App Manifest</span>
+        </div>
+      </div>
+      <div class="connector-arrow">↕</div>
+
+      <div class="arch-layer" style="border-color:#c4b5fd;background:#fdf4ff;">
+        <div class="arch-layer-label" style="color:#6b21a8;">Next.js App Router — Pages</div>
+        <div class="arch-layer-content">
+          <span class="arch-chip" style="background:#ede9fe;color:#6b21a8;">/ Login</span>
+          <span class="arch-chip" style="background:#ede9fe;color:#6b21a8;">/main Dashboard</span>
+          <span class="arch-chip" style="background:#ede9fe;color:#6b21a8;">/checkin</span>
+          <span class="arch-chip" style="background:#ede9fe;color:#6b21a8;">/phone-checkin</span>
+          <span class="arch-chip" style="background:#ede9fe;color:#6b21a8;">/passengers</span>
+          <span class="arch-chip" style="background:#ede9fe;color:#6b21a8;">/dev</span>
+        </div>
+      </div>
+      <div class="connector-arrow">↕</div>
+
+      <div class="arch-layer" style="border-color:#fbbf24;background:#fffbeb;">
+        <div class="arch-layer-label" style="color:#92400e;">React Components</div>
+        <div class="arch-layer-content">
+          <span class="arch-chip" style="background:#fef3c7;color:#92400e;">CheckInModal</span>
+          <span class="arch-chip" style="background:#fef3c7;color:#92400e;">QRScanner</span>
+          <span class="arch-chip" style="background:#fef3c7;color:#92400e;">QRGenerator</span>
+          <span class="arch-chip" style="background:#fef3c7;color:#92400e;">PWAProvider</span>
+          <span class="arch-chip" style="background:#fef3c7;color:#92400e;">ThemeProvider</span>
+          <span class="arch-chip" style="background:#fef3c7;color:#92400e;">Radix UI Primitives (30+)</span>
+        </div>
+      </div>
+      <div class="connector-arrow">↕</div>
+
+      <div class="arch-layer" style="border-color:#f9a8d4;background:#fff1f2;">
+        <div class="arch-layer-label" style="color:#9f1239;">Library / Utilities</div>
+        <div class="arch-layer-content">
+          <span class="arch-chip" style="background:#ffe4e6;color:#9f1239;">indexedDB.ts</span>
+          <span class="arch-chip" style="background:#ffe4e6;color:#9f1239;">patchDataToAPI.ts</span>
+          <span class="arch-chip" style="background:#ffe4e6;color:#9f1239;">qr-processor.ts</span>
+          <span class="arch-chip" style="background:#ffe4e6;color:#9f1239;">utils.ts</span>
+        </div>
+      </div>
+      <div class="connector-arrow">↕</div>
+
+      <div class="arch-layer" style="border-color:#94a3b8;background:#f8fafc;">
+        <div class="arch-layer-label" style="color:#475569;">Browser Storage Layer</div>
+        <div class="arch-layer-content">
+          <span class="arch-chip" style="background:#f1f5f9;color:#475569;">IndexedDB "checkin" DB</span>
+          <span class="arch-chip" style="background:#f1f5f9;color:#475569;">localStorage (routecode key)</span>
+          <span class="arch-chip" style="background:#f1f5f9;color:#475569;">Cache Storage (Service Worker)</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title">Project File Structure</p>
+    <div class="file-tree">
+      <span class="dir">loops-offlinecheckinv2-ui/</span><br>
+      <span class="comment">├── app/                    </span><span class="comment"># Next.js App Router</span><br>
+      <span class="file">│   ├── page.tsx            </span><span class="comment"># / Login page</span><br>
+      <span class="file">│   ├── layout.tsx          </span><span class="comment"># Root layout (theme, PWA provider)</span><br>
+      <span class="dir">│   ├── main/</span><br>
+      <span class="file">│   │   └── page.tsx        </span><span class="comment"># Dashboard — progress + sync timer</span><br>
+      <span class="dir">│   ├── checkin/</span><br>
+      <span class="file">│   │   └── page.tsx        </span><span class="comment"># QR scanner + phone check-in hub</span><br>
+      <span class="dir">│   ├── phone-checkin/</span><br>
+      <span class="file">│   │   ├── page.tsx        </span><span class="comment"># Phone number search</span><br>
+      <span class="file">│   │   └── loading.tsx     </span><span class="comment"># Suspense loading state</span><br>
+      <span class="dir">│   ├── passengers/</span><br>
+      <span class="file">│   │   └── page.tsx        </span><span class="comment"># Passenger list view</span><br>
+      <span class="dir">│   └── dev/</span><br>
+      <span class="file">│       └── page.tsx        </span><span class="comment"># Development utilities</span><br>
+      <span class="dir">├── components/</span><br>
+      <span class="file">│   ├── checkin-modal.tsx   </span><span class="comment"># Confirmation + seat selector modal</span><br>
+      <span class="file">│   ├── qr-scanner.tsx      </span><span class="comment"># @zxing camera QR scanner</span><br>
+      <span class="file">│   ├── qr-generator.tsx    </span><span class="comment"># QR code display generator</span><br>
+      <span class="file">│   ├── pwa-provider.tsx    </span><span class="comment"># Service worker registration</span><br>
+      <span class="file">│   ├── theme-provider.tsx  </span><span class="comment"># next-themes dark/light wrapper</span><br>
+      <span class="dir">│   └── ui/                 </span><span class="comment"># Radix UI component library (30+ files)</span><br>
+      <span class="dir">├── lib/</span><br>
+      <span class="file">│   ├── indexedDB.ts        </span><span class="comment"># getDataFromIndexedDB / updateDataInIndexedDB</span><br>
+      <span class="file">│   ├── patchDataToAPI.ts   </span><span class="comment"># PATCH /bookings/adm/check-in via axios</span><br>
+      <span class="file">│   ├── qr-processor.ts     </span><span class="comment"># QRProcessor class — phone/QR lookup logic</span><br>
+      <span class="file">│   └── utils.ts            </span><span class="comment"># cn() Tailwind class merger</span><br>
+      <span class="dir">├── types/</span><br>
+      <span class="file">│   └── bookings.type.ts    </span><span class="comment"># Booking | CheckInHistory | VehicleInfo</span><br>
+      <span class="dir">├── public/</span><br>
+      <span class="file">│   ├── sw.js               </span><span class="comment"># Custom service worker</span><br>
+      <span class="file">│   ├── manifest.json       </span><span class="comment"># PWA manifest</span><br>
+      <span class="file">│   └── icon-*.png          </span><span class="comment"># App icons (192, 512)</span><br>
+      <span class="file">├── next.config.mjs         </span><span class="comment"># next-pwa, unoptimized images</span><br>
+      <span class="file">├── tailwind.config.ts      </span><span class="comment"># Brand colors, dark mode</span><br>
+      <span class="file">└── tsconfig.json           </span><span class="comment"># @/* path alias</span>
+    </div>
+
+    <p class="section-title">Key Components</p>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="path">components/checkin-modal.tsx</div>
+        <h4>CheckInModal</h4>
+        <p>Full-screen overlay managing 4 states: loading, success (with seat counter), error, and multiple-bookings list. Calls <code>onConfirm(seats, passengerId)</code>.</p>
+      </div>
+      <div class="comp-card">
+        <div class="path">components/qr-scanner.tsx</div>
+        <h4>QRScanner</h4>
+        <p>Wraps <code>@zxing/library</code> BrowserQRCodeReader to decode QR from live camera stream. Emits decoded string via <code>onScan</code> prop.</p>
+      </div>
+      <div class="comp-card">
+        <div class="path">lib/indexedDB.ts</div>
+        <h4>getDataFromIndexedDB</h4>
+        <p>Opens or creates the "checkin" DB (v1). Reads a single record by key from the specified store. Returns the value and optionally calls a React setState setter.</p>
+      </div>
+      <div class="comp-card">
+        <div class="path">lib/indexedDB.ts</div>
+        <h4>updateDataInIndexedDB</h4>
+        <p>Opens the "checkin" DB and <code>put()</code>s the entire updated object into the store using the object's own <code>id</code> field.</p>
+      </div>
+      <div class="comp-card">
+        <div class="path">lib/patchDataToAPI.ts</div>
+        <h4>patchDataToAPI</h4>
+        <p>Takes a listticket queue and routeCode, POSTs <code>{ checkInCode, checkList }</code> to <code>NEXT_PUBLIC_API/bookings/adm/check-in</code>. Returns <code>{ status, data }</code>.</p>
+      </div>
+      <div class="comp-card">
+        <div class="path">lib/qr-processor.ts</div>
+        <h4>QRProcessor (singleton)</h4>
+        <p>Singleton class. <code>processPhoneNumber(phone, bookings)</code> filters local booking array. <code>checkInPassenger()</code> handles seat accounting and API submission.</p>
+      </div>
+    </div>
+
+    <p class="section-title">Background Sync Timer</p>
+    <div style="background:white;border-radius:10px;border:1px solid #e0e7ff;padding:24px;">
+      <p style="font-size:0.875rem;color:#4b5a8a;margin-bottom:14px;">Running on <code style="background:#f0f4ff;padding:1px 5px;border-radius:4px;">/main</code>, <code style="background:#f0f4ff;padding:1px 5px;border-radius:4px;">/checkin</code>, and <code style="background:#f0f4ff;padding:1px 5px;border-radius:4px;">/phone-checkin</code>:</p>
+      <pre style="background:#1e2a4a;color:#e0e7ff;border-radius:8px;padding:16px;overflow-x:auto;font-size:0.8rem;line-height:1.7;">setInterval(async () =&gt; {
+  if (listTicket &amp;&amp; routeCode &amp;&amp; listTicket.data.length &gt; 0) {
+    const result = await patchDataToAPI(listTicket, routeCode)
+    if (result.status === true) {
+      listTicket.data = []                    // clear queue
+      updateDataInIndexedDB("listticket", …)
+      // merge updated bookings into local state
+      updateDataInIndexedDB("booking", …)
+    }
+  }
+}, 5000) // every 5 seconds</pre>
+    </div>
+  </main>
+
+  <footer>Loops Offline Check-in V2 — Documentation &nbsp;·&nbsp; 2026-06-05</footer>
+</body>
+</html>

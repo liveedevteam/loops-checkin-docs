@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PWA Infrastructure — Loops Check-in Docs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4ff; color: #1e2a4a; }
+    header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 36px 24px 52px; }
+    header .breadcrumb { font-size: 0.8rem; opacity: 0.75; margin-bottom: 10px; }
+    header .breadcrumb a { color: white; text-decoration: none; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+    nav { background: white; border-bottom: 1px solid #dde6ff; padding: 0 24px; display: flex; overflow-x: auto; justify-content: center; }
+    nav a { padding: 14px 18px; font-size: 0.875rem; font-weight: 500; color: #4b5a8a; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    nav a:hover { color: #1e3a8a; border-bottom-color: #3b82f6; }
+    nav a.active { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+    main { max-width: 960px; margin: -24px auto 48px; padding: 0 24px; }
+    .section-title { font-size: 1.15rem; font-weight: 600; color: #1e2a4a; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e7ff; }
+    .card { background: white; border-radius: 12px; border: 1px solid #e0e7ff; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(30,58,138,0.06); }
+    .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 10px; color: #1e2a4a; }
+    .card p { font-size: 0.875rem; color: #6b7a9a; line-height: 1.65; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    pre { background: #1e2a4a; color: #e0e7ff; border-radius: 8px; padding: 18px 20px; overflow-x: auto; font-size: 0.8rem; line-height: 1.75; margin-top: 12px; }
+    pre .key { color: #93c5fd; }
+    pre .val { color: #86efac; }
+    pre .str { color: #fde68a; }
+    pre .com { color: #64748b; }
+    .lifecycle { display: flex; flex-direction: column; gap: 0; }
+    .lc-step { display: flex; align-items: flex-start; gap: 16px; }
+    .lc-left { display: flex; flex-direction: column; align-items: center; min-width: 44px; }
+    .lc-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid; flex-shrink: 0; }
+    .lc-line { width: 2px; background: #e0e7ff; flex-grow: 1; min-height: 24px; margin: 2px 0; }
+    .lc-content { padding-top: 8px; padding-bottom: 24px; flex: 1; }
+    .lc-content h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+    .lc-content p { font-size: 0.82rem; color: #6b7a9a; line-height: 1.6; }
+    .cache-table { width: 100%; border-collapse: collapse; border: 1px solid #e0e7ff; border-radius: 10px; overflow: hidden; background: white; }
+    .cache-table th { background: #f5f8ff; padding: 10px 18px; font-size: 0.75rem; font-weight: 600; color: #6b7a9a; text-transform: uppercase; border-bottom: 1px solid #e0e7ff; text-align: left; }
+    .cache-table td { padding: 11px 18px; font-size: 0.85rem; border-bottom: 1px solid #f0f4ff; }
+    .cache-table tr:last-child td { border: none; }
+    .status-yes { background: #dcfce7; color: #16a34a; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .status-no { background: #fee2e2; color: #dc2626; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .manifest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .manifest-field { padding: 10px 0; border-bottom: 1px solid #f0f4ff; font-size: 0.85rem; }
+    .manifest-field:last-child { border: none; }
+    .manifest-key { font-family: monospace; color: #1e40af; font-weight: 600; margin-bottom: 3px; }
+    .manifest-val { color: #4b5a8a; }
+    .highlight-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 18px 22px; }
+    .highlight-box h4 { color: #1e3a8a; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+    .highlight-box p, .highlight-box ul { font-size: 0.85rem; color: #374151; line-height: 1.65; }
+    .highlight-box ul { padding-left: 18px; }
+    footer { text-align: center; padding: 32px; color: #9aa3c0; font-size: 0.8rem; border-top: 1px solid #e0e7ff; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="breadcrumb"><a href="index.html">Docs</a> / PWA Infrastructure</div>
+    <h1>PWA Infrastructure</h1>
+    <p>Service worker, caching strategy, web app manifest, and offline resilience</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="key-features.html">Key Features</a>
+    <a href="user-flow.html">User Flow</a>
+    <a href="data-model.html">Data Model</a>
+    <a href="system-architecture.html">System Architecture</a>
+    <a href="data-flow.html">Data Flow</a>
+    <a href="pwa-infrastructure.html" class="active">PWA Infrastructure</a>
+  </nav>
+
+  <main>
+    <div class="highlight-box" style="margin-top: 36px;">
+      <h4>Why PWA?</h4>
+      <p>Check-in events often take place in venues (bus terminals, piers, airports) with unreliable Wi-Fi or mobile data. A PWA allows staff to install the app to their home screen, load it instantly from cache, and operate fully offline — syncing to the server whenever connectivity is restored.</p>
+    </div>
+
+    <p class="section-title">PWA Components Overview</p>
+    <div class="grid-2">
+      <div class="card" style="border-left:3px solid #3b82f6;">
+        <h3>📄 Web App Manifest</h3>
+        <p>Tells the browser how to install the app and present it on the home screen: name, icons, theme colors, display mode, and orientation.</p>
+        <p style="margin-top:8px;font-size:0.8rem;font-family:monospace;background:#f5f8ff;padding:4px 8px;border-radius:4px;color:#3b82f6;">public/manifest.json</p>
+      </div>
+      <div class="card" style="border-left:3px solid #16a34a;">
+        <h3>⚙️ Service Worker</h3>
+        <p>A JavaScript file that runs in the background, intercepts network requests, and serves responses from the Cache API. Enables offline page loads.</p>
+        <p style="margin-top:8px;font-size:0.8rem;font-family:monospace;background:#f5f8ff;padding:4px 8px;border-radius:4px;color:#3b82f6;">public/sw.js</p>
+      </div>
+      <div class="card" style="border-left:3px solid #9333ea;">
+        <h3>🔌 PWAProvider</h3>
+        <p>React component in the root layout that handles service worker registration via <code>navigator.serviceWorker.register('/sw.js')</code> on client mount.</p>
+        <p style="margin-top:8px;font-size:0.8rem;font-family:monospace;background:#f5f8ff;padding:4px 8px;border-radius:4px;color:#3b82f6;">components/pwa-provider.tsx</p>
+      </div>
+      <div class="card" style="border-left:3px solid #f59e0b;">
+        <h3>🗄️ IndexedDB</h3>
+        <p>Browser-native structured storage used for all booking data. Persists across sessions and works completely offline. Three object stores managed by the app.</p>
+        <p style="margin-top:8px;font-size:0.8rem;font-family:monospace;background:#f5f8ff;padding:4px 8px;border-radius:4px;color:#3b82f6;">lib/indexedDB.ts</p>
+      </div>
+    </div>
+
+    <p class="section-title">Service Worker Lifecycle</p>
+    <div class="card">
+      <div class="lifecycle">
+        <div class="lc-step">
+          <div class="lc-left">
+            <div class="lc-circle" style="background:#eff6ff;border-color:#3b82f6;">📥</div>
+            <div class="lc-line"></div>
+          </div>
+          <div class="lc-content">
+            <h4 style="color:#1d4ed8;">1. Install Event</h4>
+            <p>Triggered when the service worker is first registered or when <code>CACHE_NAME</code> changes. Calls <code>caches.open(CACHE_NAME)</code> and pre-caches all listed URLs. The current cache name is <strong>loops-checkin-v2.1</strong>.</p>
+            <pre>self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open("loops-checkin-v2.1")
+      .then((cache) => cache.addAll(urlsToCache))
+  )
+})</pre>
+          </div>
+        </div>
+        <div class="lc-step">
+          <div class="lc-left">
+            <div class="lc-circle" style="background:#f0fdf4;border-color:#16a34a;">🔄</div>
+            <div class="lc-line"></div>
+          </div>
+          <div class="lc-content">
+            <h4 style="color:#166534;">2. Activate Event</h4>
+            <p>After install, the SW takes control of matching pages. Old caches from previous versions can be purged here (not currently implemented — handled by renaming <code>CACHE_NAME</code> on each deployment).</p>
+          </div>
+        </div>
+        <div class="lc-step">
+          <div class="lc-left">
+            <div class="lc-circle" style="background:#fdf4ff;border-color:#9333ea;">🌐</div>
+          </div>
+          <div class="lc-content">
+            <h4 style="color:#6b21a8;">3. Fetch Event — Cache-First Strategy</h4>
+            <p>Every network request is intercepted. The SW checks the cache first. If a match is found, it's returned immediately (instant, offline). If not found, the request falls through to the network.</p>
+            <pre>self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request)
+    })
+  )
+})</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title">Pre-cached URLs</p>
+    <table class="cache-table">
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Description</th>
+          <th>Cached</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Login page (root)</td><td><span class="status-yes">Yes</span></td></tr>
+        <tr><td><code>/main</code></td><td>Dashboard page</td><td><span class="status-yes">Yes</span></td></tr>
+        <tr><td><code>/checkin</code></td><td>Check-in hub (QR + phone)</td><td><span class="status-yes">Yes</span></td></tr>
+        <tr><td><code>/phone-checkin</code></td><td>Phone number search page</td><td><span class="status-yes">Yes</span></td></tr>
+        <tr><td><code>/passengers</code></td><td>Passenger list view</td><td><span class="status-yes">Yes</span></td></tr>
+        <tr><td><code>/manifest.json</code></td><td>Web app manifest</td><td><span class="status-yes">Yes</span></td></tr>
+        <tr><td>API calls (<code>/bookings/…</code>)</td><td>Dynamic backend data</td><td><span class="status-no">No — network only</span></td></tr>
+        <tr><td>Camera stream</td><td>getUserMedia / WebRTC</td><td><span class="status-no">No — device only</span></td></tr>
+      </tbody>
+    </table>
+
+    <p class="section-title">Web App Manifest</p>
+    <div class="card">
+      <p style="font-size:0.8rem;color:#6b7a9a;margin-bottom:16px;">File: <code style="background:#f0f4ff;padding:1px 6px;border-radius:4px;color:#3b82f6;">public/manifest.json</code></p>
+      <div class="manifest-grid">
+        <div>
+          <div class="manifest-field"><div class="manifest-key">name</div><div class="manifest-val">"Loops Check-in App"</div></div>
+          <div class="manifest-field"><div class="manifest-key">short_name</div><div class="manifest-val">"Loops Checkin"</div></div>
+          <div class="manifest-field"><div class="manifest-key">start_url</div><div class="manifest-val">"/" (Login page)</div></div>
+          <div class="manifest-field"><div class="manifest-key">display</div><div class="manifest-val">"standalone" — no browser chrome</div></div>
+          <div class="manifest-field"><div class="manifest-key">orientation</div><div class="manifest-val">"portrait" — locked for mobile use</div></div>
+        </div>
+        <div>
+          <div class="manifest-field"><div class="manifest-key">theme_color</div><div class="manifest-val" style="display:flex;align-items:center;gap:8px;"><div style="width:14px;height:14px;background:#3b82f6;border-radius:3px;"></div> #3b82f6 (brand blue)</div></div>
+          <div class="manifest-field"><div class="manifest-key">background_color</div><div class="manifest-val" style="display:flex;align-items:center;gap:8px;"><div style="width:14px;height:14px;background:#ffffff;border:1px solid #e0e7ff;border-radius:3px;"></div> #ffffff</div></div>
+          <div class="manifest-field"><div class="manifest-key">icons</div><div class="manifest-val">192×192 + 512×512 PNG</div></div>
+          <div class="manifest-field"><div class="manifest-key">categories</div><div class="manifest-val">["productivity", "utilities"]</div></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title">Deployment Note — Cache Versioning</p>
+    <div class="highlight-box">
+      <h4>Important: Update <code>CACHE_NAME</code> on every deployment</h4>
+      <p>The service worker uses a static cache name <code>loops-checkin-v2.1</code>. If the app's JavaScript or HTML changes but the cache name stays the same, users will continue to load stale cached files. The deployment protocol is:</p>
+      <ul style="margin-top:10px;">
+        <li>Increment the version suffix in <code>public/sw.js</code> before each release (e.g. <code>v2.1</code> → <code>v2.2</code>)</li>
+        <li>The install event will create a new cache; the old one should be purged in the activate event</li>
+        <li>All clients will receive the updated app on their next page load</li>
+      </ul>
+    </div>
+
+    <p class="section-title">Offline Resilience Summary</p>
+    <table class="cache-table" style="margin-top:8px;">
+      <thead>
+        <tr><th>Scenario</th><th>Result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Open app with no internet, never loaded before</td><td style="color:#dc2626;">Fails — first load requires network (no pre-install)</td></tr>
+        <tr><td>Open app offline after at least one successful load</td><td style="color:#16a34a;">Works — pages served from Cache API</td></tr>
+        <tr><td>Check in a passenger while offline</td><td style="color:#16a34a;">Works — local IndexedDB lookup + queue</td></tr>
+        <tr><td>View passenger list while offline</td><td style="color:#16a34a;">Works — data from IndexedDB</td></tr>
+        <tr><td>Login (enter route code) while offline</td><td style="color:#dc2626;">Fails — requires network to fetch booking data</td></tr>
+        <tr><td>Sync check-in to backend while offline</td><td style="color:#f59e0b;">Queued — retried on reconnect (every 5 s)</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <footer>Loops Offline Check-in V2 — Documentation &nbsp;·&nbsp; 2026-06-05</footer>
+</body>
+</html>

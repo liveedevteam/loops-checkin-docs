@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Key Features — Loops Check-in Docs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4ff; color: #1e2a4a; }
+    header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 36px 24px 52px; }
+    header .breadcrumb { font-size: 0.8rem; opacity: 0.75; margin-bottom: 10px; }
+    header .breadcrumb a { color: white; text-decoration: none; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+    nav { background: white; border-bottom: 1px solid #dde6ff; padding: 0 24px; display: flex; gap: 0; overflow-x: auto; justify-content: center; }
+    nav a { padding: 14px 18px; font-size: 0.875rem; font-weight: 500; color: #4b5a8a; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    nav a:hover { color: #1e3a8a; border-bottom-color: #3b82f6; }
+    nav a.active { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+    main { max-width: 960px; margin: -24px auto 48px; padding: 0 24px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 8px; }
+    .feature-card { background: white; border-radius: 12px; padding: 28px; border: 1px solid #e0e7ff; box-shadow: 0 2px 8px rgba(30,58,138,0.06); }
+    .feature-card .icon { font-size: 32px; margin-bottom: 14px; }
+    .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 10px; color: #1e2a4a; }
+    .feature-card p { font-size: 0.875rem; color: #6b7a9a; line-height: 1.65; }
+    .feature-card ul { font-size: 0.875rem; color: #6b7a9a; line-height: 1.8; padding-left: 18px; margin-top: 8px; }
+    .section-title { font-size: 1.15rem; font-weight: 600; color: #1e2a4a; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e7ff; }
+    .highlight-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+    .highlight-box h4 { color: #1e3a8a; font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+    .highlight-box p { font-size: 0.875rem; color: #374151; line-height: 1.65; }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin: 2px; }
+    .pill-blue { background: #dbeafe; color: #1d4ed8; }
+    .pill-green { background: #dcfce7; color: #16a34a; }
+    .pill-orange { background: #ffedd5; color: #c2410c; }
+    .pill-purple { background: #f3e8ff; color: #9333ea; }
+    footer { text-align: center; padding: 32px; color: #9aa3c0; font-size: 0.8rem; border-top: 1px solid #e0e7ff; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="breadcrumb"><a href="index.html">Docs</a> / Key Features</div>
+    <h1>Key Features</h1>
+    <p>Core capabilities of the Loops Offline Check-in V2 application</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="key-features.html" class="active">Key Features</a>
+    <a href="user-flow.html">User Flow</a>
+    <a href="data-model.html">Data Model</a>
+    <a href="system-architecture.html">System Architecture</a>
+    <a href="data-flow.html">Data Flow</a>
+    <a href="pwa-infrastructure.html">PWA Infrastructure</a>
+  </nav>
+
+  <main>
+    <div class="highlight-box" style="margin-top: 36px;">
+      <h4>Design Goal</h4>
+      <p>Ground staff must be able to check in passengers even when the venue has poor or no internet. All booking data is downloaded at session start and stored locally; check-in actions are queued and synced to the backend as soon as connectivity allows.</p>
+    </div>
+
+    <p class="section-title">Core Features</p>
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <div class="icon">📴</div>
+        <h3>Offline-First Operation</h3>
+        <p>The app downloads all booking data for a route at login and stores it in IndexedDB. Every check-in action works entirely locally — no live internet required during the event.</p>
+        <ul>
+          <li>Data survives page reload</li>
+          <li>Works in airplane mode</li>
+          <li>Queues pending syncs automatically</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">📷</div>
+        <h3>QR Code Scanning</h3>
+        <p>Uses the device camera via <code style="background:#f0f4ff;padding:1px 4px;border-radius:4px;">@zxing/library</code> to scan passenger booking QR codes. Each QR encodes the booking <code style="background:#f0f4ff;padding:1px 4px;border-radius:4px;">orderNumber</code>, which is matched against local IndexedDB data instantly.</p>
+        <ul>
+          <li>Real-time camera feed</li>
+          <li>Instant local lookup (no API call)</li>
+          <li>Handles already-used tickets</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">📞</div>
+        <h3>Phone Number Check-in</h3>
+        <p>Alternative check-in method for passengers whose QR code is unavailable or damaged. Staff enters the passenger's phone number and the system searches local bookings.</p>
+        <ul>
+          <li>Multiple bookings per phone supported</li>
+          <li>Shows booking selection UI</li>
+          <li>Partial seat check-in (e.g. 1 of 3)</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">🗄️</div>
+        <h3>IndexedDB Local Storage</h3>
+        <p>Three object stores persist all session data in the browser's IndexedDB, surviving refreshes and connectivity loss.</p>
+        <ul>
+          <li><strong>routecode</strong> — active route identifier</li>
+          <li><strong>booking</strong> — all passenger bookings</li>
+          <li><strong>listticket</strong> — pending check-in queue</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">🔄</div>
+        <h3>Background API Sync</h3>
+        <p>A <code style="background:#f0f4ff;padding:1px 4px;border-radius:4px;">setInterval</code> timer runs every 5 seconds on active pages. When the pending <em>listticket</em> queue is non-empty and connectivity is available, it batches and PATCHes all check-ins to the backend in one call.</p>
+        <ul>
+          <li>5-second polling interval</li>
+          <li>Clears queue on success</li>
+          <li>Updates local booking state</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">📊</div>
+        <h3>Live Progress Dashboard</h3>
+        <p>The main dashboard shows a circular progress indicator with checked-in vs. total seats, updated from the local IndexedDB state in real time as check-ins are confirmed.</p>
+        <ul>
+          <li>Checked-in seat count</li>
+          <li>Remaining seat count</li>
+          <li>Active route code display</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">👥</div>
+        <h3>Passenger List</h3>
+        <p>A dedicated <em>/passengers</em> page lets staff browse all bookings for the route, see check-in status per passenger, and manually select bookings to process.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">🪑</div>
+        <h3>Partial Seat Check-in</h3>
+        <p>For group bookings with multiple seats, the <code style="background:#f0f4ff;padding:1px 4px;border-radius:4px;">CheckInModal</code> presents a seat counter (+/−) so staff can board a subset of the group's seats at a time, tracked in <code style="background:#f0f4ff;padding:1px 4px;border-radius:4px;">checkInHistory</code>.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon">📱</div>
+        <h3>Progressive Web App</h3>
+        <p>Installable on any mobile device's home screen via the web app manifest. Runs in standalone mode (no browser chrome) and loads instantly from the service worker cache.</p>
+        <ul>
+          <li>Standalone display mode</li>
+          <li>Custom app icons</li>
+          <li>Portrait orientation lock</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <p class="section-title">Check-in State Machine</p>
+    <div style="background:white;border-radius:12px;border:1px solid #e0e7ff;padding:28px;overflow-x:auto;">
+      <div style="display:flex;gap:0;align-items:stretch;flex-wrap:wrap;gap:12px;justify-content:center;">
+        <div style="text-align:center;min-width:110px;">
+          <div style="background:#dbeafe;border:2px solid #93c5fd;border-radius:8px;padding:10px 14px;font-size:0.82rem;font-weight:600;color:#1e40af;">VALID</div>
+          <div style="color:#6b7a9a;font-size:0.75rem;margin-top:6px;">available</div>
+        </div>
+        <div style="display:flex;align-items:center;color:#94a3b8;font-size:1.2rem;">→</div>
+        <div style="text-align:center;min-width:110px;">
+          <div style="background:#fef9c3;border:2px solid #fde047;border-radius:8px;padding:10px 14px;font-size:0.82rem;font-weight:600;color:#854d0e;">PARTIAL</div>
+          <div style="color:#6b7a9a;font-size:0.75rem;margin-top:6px;">some seats boarded</div>
+        </div>
+        <div style="display:flex;align-items:center;color:#94a3b8;font-size:1.2rem;">→</div>
+        <div style="text-align:center;min-width:110px;">
+          <div style="background:#dcfce7;border:2px solid #86efac;border-radius:8px;padding:10px 14px;font-size:0.82rem;font-weight:600;color:#166534;">USED</div>
+          <div style="color:#6b7a9a;font-size:0.75rem;margin-top:6px;">all seats boarded</div>
+        </div>
+        <div style="display:flex;align-items:center;color:#ef4444;font-size:1.2rem;margin-left:24px;">✕</div>
+        <div style="text-align:center;min-width:110px;">
+          <div style="background:#fee2e2;border:2px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:0.82rem;font-weight:600;color:#991b1b;">NOT FOUND</div>
+          <div style="color:#6b7a9a;font-size:0.75rem;margin-top:6px;">no matching record</div>
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:#9aa3c0;margin-top:18px;text-align:center;">Status is derived by comparing <strong>checkInHistory seat sum</strong> against <strong>booking.seats</strong></p>
+    </div>
+
+    <p class="section-title">Technology Tags</p>
+    <div>
+      <span class="pill pill-blue">Next.js 15</span>
+      <span class="pill pill-blue">React 19</span>
+      <span class="pill pill-blue">TypeScript 5</span>
+      <span class="pill pill-green">IndexedDB</span>
+      <span class="pill pill-green">Service Worker</span>
+      <span class="pill pill-green">Offline-First</span>
+      <span class="pill pill-orange">@zxing/library</span>
+      <span class="pill pill-orange">Axios</span>
+      <span class="pill pill-purple">Radix UI</span>
+      <span class="pill pill-purple">Tailwind CSS</span>
+      <span class="pill pill-purple">Lucide Icons</span>
+    </div>
+  </main>
+
+  <footer>Loops Offline Check-in V2 — Documentation &nbsp;·&nbsp; 2026-06-05</footer>
+</body>
+</html>

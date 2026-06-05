@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Flow — Loops Check-in Docs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4ff; color: #1e2a4a; }
+    header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 36px 24px 52px; }
+    header .breadcrumb { font-size: 0.8rem; opacity: 0.75; margin-bottom: 10px; }
+    header .breadcrumb a { color: white; text-decoration: none; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+    nav { background: white; border-bottom: 1px solid #dde6ff; padding: 0 24px; display: flex; gap: 0; overflow-x: auto; justify-content: center; }
+    nav a { padding: 14px 18px; font-size: 0.875rem; font-weight: 500; color: #4b5a8a; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    nav a:hover { color: #1e3a8a; border-bottom-color: #3b82f6; }
+    nav a.active { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+    main { max-width: 960px; margin: -24px auto 48px; padding: 0 24px; }
+    .section-title { font-size: 1.15rem; font-weight: 600; color: #1e2a4a; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e7ff; }
+    /* Flow diagram */
+    .flow-container { background: white; border-radius: 12px; border: 1px solid #e0e7ff; padding: 36px 24px; overflow-x: auto; }
+    .flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .flow-step { display: flex; align-items: stretch; width: 100%; max-width: 760px; }
+    .step-node { background: white; border: 2px solid #3b82f6; border-radius: 10px; padding: 16px 20px; flex: 1; }
+    .step-node.decision { background: #fefce8; border-color: #fbbf24; border-radius: 0; transform: rotate(0); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); padding: 28px 40px; text-align: center; }
+    .step-node h4 { font-size: 0.9rem; font-weight: 600; color: #1e2a4a; margin-bottom: 4px; }
+    .step-node p { font-size: 0.8rem; color: #6b7a9a; line-height: 1.5; }
+    .step-node .page-badge { display: inline-block; font-size: 0.7rem; background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 10px; margin-bottom: 6px; }
+    .connector { display: flex; justify-content: center; align-items: center; height: 36px; }
+    .connector svg { flex-shrink: 0; }
+    .branch { display: grid; grid-template-columns: 1fr 48px 1fr; gap: 0; width: 100%; max-width: 760px; align-items: start; }
+    .branch-line { display: flex; flex-direction: column; align-items: center; padding-top: 0; }
+    .branch-center { display: flex; flex-direction: column; align-items: center; }
+    .route-label { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-bottom: 6px; white-space: nowrap; }
+    .label-yes { background: #dcfce7; color: #16a34a; }
+    .label-no { background: #fee2e2; color: #dc2626; }
+    .label-qr { background: #eff6ff; color: #3b82f6; }
+    .label-phone { background: #fdf4ff; color: #9333ea; }
+    /* Page screens */
+    .screens-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 8px; }
+    .screen { background: white; border-radius: 10px; border: 1px solid #e0e7ff; overflow: hidden; }
+    .screen-header { padding: 10px 14px; font-size: 0.8rem; font-weight: 600; border-bottom: 1px solid #e0e7ff; display: flex; align-items: center; gap: 8px; }
+    .screen-body { padding: 14px; }
+    .screen-body ul { font-size: 0.8rem; color: #6b7a9a; line-height: 1.8; padding-left: 16px; }
+    .screen-route { font-size: 0.7rem; font-family: monospace; background: #f5f8ff; color: #3b82f6; padding: 2px 6px; border-radius: 4px; }
+    footer { text-align: center; padding: 32px; color: #9aa3c0; font-size: 0.8rem; border-top: 1px solid #e0e7ff; margin-top: 24px; }
+    .card { background: white; border-radius: 12px; border: 1px solid #e0e7ff; padding: 24px; margin-bottom: 16px; }
+    .error-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .error-chip { border-radius: 8px; padding: 10px 16px; font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="breadcrumb"><a href="index.html">Docs</a> / User Flow</div>
+    <h1>User Flow</h1>
+    <p>Complete journey from session start through passenger check-in and data sync</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="key-features.html">Key Features</a>
+    <a href="user-flow.html" class="active">User Flow</a>
+    <a href="data-model.html">Data Model</a>
+    <a href="system-architecture.html">System Architecture</a>
+    <a href="data-flow.html">Data Flow</a>
+    <a href="pwa-infrastructure.html">PWA Infrastructure</a>
+  </nav>
+
+  <main>
+    <p class="section-title" style="margin-top:36px;">Main Flow Diagram</p>
+    <div class="flow-container">
+      <div class="flow">
+
+        <!-- Step 1: Login -->
+        <div class="flow-step">
+          <div class="step-node" style="border-color:#1e3a8a;background:#eff6ff;">
+            <span class="page-badge">/ (root)</span>
+            <h4>1. Login — Enter Route Code</h4>
+            <p>Staff enters the route code (e.g. "BKK-CNX-001"). App calls <code>GET /bookings/adm/round/:code</code> to fetch all bookings for that route.</p>
+          </div>
+        </div>
+        <div class="connector">
+          <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+        </div>
+
+        <!-- Step 2: Save to IDB -->
+        <div class="flow-step">
+          <div class="step-node" style="border-color:#16a34a;background:#f0fdf4;">
+            <span class="page-badge" style="background:#dcfce7;color:#16a34a;border-color:#86efac;">IndexedDB</span>
+            <h4>2. Save Data Locally</h4>
+            <p>Clears old DB, then writes <strong>routecode</strong>, <strong>booking</strong>, and an empty <strong>listticket</strong> store. Redirects to <code>/main</code>.</p>
+          </div>
+        </div>
+        <div class="connector">
+          <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+        </div>
+
+        <!-- Step 3: Dashboard -->
+        <div class="flow-step">
+          <div class="step-node">
+            <span class="page-badge">/main</span>
+            <h4>3. Dashboard</h4>
+            <p>Loads booking data from IndexedDB and shows the circular progress indicator. Background sync timer starts (every 5 s).</p>
+          </div>
+        </div>
+        <div class="connector">
+          <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+        </div>
+
+        <!-- Step 4: Check-in -->
+        <div class="flow-step">
+          <div class="step-node">
+            <span class="page-badge">/checkin</span>
+            <h4>4. Check-in Hub</h4>
+            <p>Staff chooses between <strong>QR Code Scanner</strong> or <strong>Phone Number</strong> lookup.</p>
+          </div>
+        </div>
+
+        <!-- Branch -->
+        <div style="width:100%;max-width:760px;margin:0 auto;">
+          <div style="display:grid;grid-template-columns:1fr 24px 1fr;gap:0;align-items:start;">
+            <!-- Left: QR path -->
+            <div style="display:flex;flex-direction:column;align-items:center;padding-top:0;">
+              <div style="display:flex;flex-direction:column;align-items:center;width:100%;">
+                <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+                <div style="margin-bottom:6px;"><span class="route-label label-qr">QR Code</span></div>
+                <div class="step-node" style="width:100%;">
+                  <span class="page-badge">/checkin</span>
+                  <h4>4a. Camera Scan</h4>
+                  <p>Opens device camera. Scans orderNumber from QR. Looks up in local booking array.</p>
+                </div>
+              </div>
+            </div>
+            <!-- Center divider -->
+            <div style="display:flex;justify-content:center;padding-top:56px;">
+              <div style="width:1px;background:#e0e7ff;height:100%;min-height:80px;"></div>
+            </div>
+            <!-- Right: Phone path -->
+            <div style="display:flex;flex-direction:column;align-items:center;padding-top:0;">
+              <div style="display:flex;flex-direction:column;align-items:center;width:100%;">
+                <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+                <div style="margin-bottom:6px;"><span class="route-label label-phone">Phone No.</span></div>
+                <div class="step-node" style="width:100%;border-color:#9333ea;">
+                  <span class="page-badge" style="background:#fdf4ff;color:#9333ea;border-color:#e9d5ff;">/phone-checkin</span>
+                  <h4>4b. Phone Search</h4>
+                  <p>Staff types passenger phone. <code>QRProcessor.processPhoneNumber()</code> filters local bookings by telephoneNumber.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="connector">
+          <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+        </div>
+
+        <!-- Step 5: Modal -->
+        <div class="flow-step">
+          <div class="step-node" style="border-color:#16a34a;background:#f0fdf4;">
+            <span class="page-badge" style="background:#dcfce7;color:#16a34a;border-color:#86efac;">CheckInModal</span>
+            <h4>5. Confirmation Modal</h4>
+            <p>Shows booking details. For multi-seat bookings, staff selects how many seats to board. Staff taps <strong>Confirm</strong>.</p>
+          </div>
+        </div>
+        <div class="connector">
+          <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+        </div>
+
+        <!-- Step 6: Write + Sync -->
+        <div class="flow-step">
+          <div class="step-node" style="border-color:#f59e0b;background:#fffbeb;">
+            <span class="page-badge" style="background:#fef3c7;color:#d97706;border-color:#fde68a;">IndexedDB + API</span>
+            <h4>6. Write Locally &amp; Sync</h4>
+            <p>Appends entry to <code>listticket</code>, updates local booking state, calls <code>PATCH /bookings/adm/check-in</code>. On success, clears queue and writes updated booking back to IndexedDB.</p>
+          </div>
+        </div>
+        <div class="connector">
+          <svg width="24" height="36"><line x1="12" y1="0" x2="12" y2="28" stroke="#3b82f6" stroke-width="2"/><polygon points="6,22 12,36 18,22" fill="#3b82f6"/></svg>
+        </div>
+
+        <!-- Step 7: Return -->
+        <div class="flow-step">
+          <div class="step-node" style="border-color:#1e3a8a;background:#eff6ff;">
+            <span class="page-badge">/main</span>
+            <h4>7. Return to Dashboard</h4>
+            <p>Progress circle updates. Ready for next check-in. Background sync continues every 5 s.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="section-title">Error / Edge Case Paths</p>
+    <div class="error-row">
+      <div class="error-chip" style="background:#fee2e2;border:1px solid #fca5a5;flex:1;min-width:180px;">
+        <strong style="color:#991b1b;font-size:0.82rem;">Not Found</strong>
+        <p style="font-size:0.78rem;color:#7f1d1d;margin-top:4px;">QR or phone does not match any booking in local data. Modal shows error state.</p>
+      </div>
+      <div class="error-chip" style="background:#fef9c3;border:1px solid #fde047;flex:1;min-width:180px;">
+        <strong style="color:#854d0e;font-size:0.82rem;">Already Used</strong>
+        <p style="font-size:0.78rem;color:#7c2d12;margin-top:4px;"><code>checkinStatus = true</code> (all seats boarded). Modal shows "Already has been used".</p>
+      </div>
+      <div class="error-chip" style="background:#fdf4ff;border:1px solid #e9d5ff;flex:1;min-width:180px;">
+        <strong style="color:#6b21a8;font-size:0.82rem;">Multiple Bookings</strong>
+        <p style="font-size:0.78rem;color:#581c87;margin-top:4px;">Same phone number has >1 valid booking. Modal lists all; staff selects one.</p>
+      </div>
+      <div class="error-chip" style="background:#fff7ed;border:1px solid #fed7aa;flex:1;min-width:180px;">
+        <strong style="color:#9a3412;font-size:0.82rem;">API Failure</strong>
+        <p style="font-size:0.78rem;color:#7c2d12;margin-top:4px;">PATCH fails or offline. Entry stays in <code>listticket</code> queue and retries next interval.</p>
+      </div>
+    </div>
+
+    <p class="section-title">Page Routes Summary</p>
+    <div class="screens-grid">
+      <div class="screen">
+        <div class="screen-header" style="background:#eff6ff;">
+          <span style="background:#3b82f6;color:white;border-radius:4px;padding:1px 6px;font-size:0.7rem;">GET</span>
+          <span class="screen-route">/</span>
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>Route code input</li>
+            <li>Fetches bookings</li>
+            <li>Saves to IndexedDB</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen">
+        <div class="screen-header" style="background:#f0fdf4;">
+          <span style="background:#16a34a;color:white;border-radius:4px;padding:1px 6px;font-size:0.7rem;">VIEW</span>
+          <span class="screen-route">/main</span>
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>Progress indicator</li>
+            <li>Route info card</li>
+            <li>Quick action buttons</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen">
+        <div class="screen-header" style="background:#fdf4ff;">
+          <span style="background:#9333ea;color:white;border-radius:4px;padding:1px 6px;font-size:0.7rem;">ACT</span>
+          <span class="screen-route">/checkin</span>
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>Open camera button</li>
+            <li>QR scanner view</li>
+            <li>Phone check-in link</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen">
+        <div class="screen-header" style="background:#fdf4ff;">
+          <span style="background:#9333ea;color:white;border-radius:4px;padding:1px 6px;font-size:0.7rem;">ACT</span>
+          <span class="screen-route">/phone-checkin</span>
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>Phone input form</li>
+            <li>Search local bookings</li>
+            <li>Confirm modal</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen">
+        <div class="screen-header" style="background:#fff7ed;">
+          <span style="background:#ea580c;color:white;border-radius:4px;padding:1px 6px;font-size:0.7rem;">LIST</span>
+          <span class="screen-route">/passengers</span>
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>All booking records</li>
+            <li>Check-in status</li>
+            <li>Manual selection</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Loops Offline Check-in V2 — Documentation &nbsp;·&nbsp; 2026-06-05</footer>
+</body>
+</html>
