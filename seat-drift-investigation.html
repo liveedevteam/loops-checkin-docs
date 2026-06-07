@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seat Drift Investigation — Daniel Caesar Event</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --yellow: #d97706;
+      --yellow-light: #fffbeb;
+      --gray: #6b7280;
+      --gray-light: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Header */
+    .page-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+    .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .page-header p { opacity: .8; font-size: 14px; }
+    .badge-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .badge {
+      background: rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.3);
+      color: white;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* Alert boxes */
+    .alert {
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .alert-red { background: var(--red-light); border-left: 4px solid var(--red); }
+    .alert-green { background: var(--green-light); border-left: 4px solid var(--green); }
+    .alert-yellow { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+    .alert-blue { background: var(--blue-light); border-left: 4px solid var(--blue); }
+    .alert strong { display: block; margin-bottom: 2px; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      background: var(--gray-light);
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    td {
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #fafafa; }
+    tr.highlight td { background: #fef3c7; }
+    tr.highlight-red td { background: #fee2e2; }
+    tr.highlight-green td { background: #dcfce7; }
+
+    /* Numbers */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .stat-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-box .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .stat-box .value { font-size: 28px; font-weight: 700; }
+    .stat-box.red .value { color: var(--red); }
+    .stat-box.green .value { color: var(--green); }
+    .stat-box.blue .value { color: var(--blue); }
+    .stat-box.yellow .value { color: var(--yellow); }
+
+    /* Flow diagram */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .flow-step .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 32px;
+    }
+    .flow-step .node {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: white;
+    }
+    .flow-step .line {
+      width: 2px; background: var(--border);
+      flex: 1; min-height: 20px; margin: 2px 0;
+    }
+    .flow-step .content {
+      background: var(--gray-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      flex: 1;
+      margin-bottom: 4px;
+    }
+    .flow-step .content .step-title { font-weight: 600; margin-bottom: 3px; }
+    .flow-step .content .step-desc { font-size: 12px; color: var(--text-muted); }
+    .flow-step .content code {
+      background: #e5e7eb;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    /* Decision diamond */
+    .decision {
+      background: #fef9c3;
+      border: 2px solid #f59e0b;
+      border-radius: 8px;
+      padding: 10px 14px;
+      flex: 1;
+      margin-bottom: 4px;
+    }
+    .decision .step-title { font-weight: 600; color: #92400e; margin-bottom: 3px; }
+    .decision .step-desc { font-size: 12px; color: #92400e; }
+
+    .success-box {
+      background: var(--green-light);
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 10px 14px;
+      flex: 1;
+      margin-bottom: 4px;
+    }
+    .error-box {
+      background: var(--red-light);
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      flex: 1;
+      margin-bottom: 4px;
+    }
+
+    .branch-row { display: flex; gap: 16px; margin-left: 44px; margin-bottom: 4px; flex-wrap: wrap; }
+    .branch { flex: 1; min-width: 200px; }
+    .branch-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .branch-label.yes { background: var(--green-light); color: var(--green); }
+    .branch-label.no { background: var(--red-light); color: var(--red); }
+
+    .indent { margin-left: 44px; }
+
+    /* Code block */
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+    pre .comment { color: #64748b; }
+    pre .keyword { color: #93c5fd; }
+    pre .string { color: #86efac; }
+    pre .number { color: #fda4af; }
+    pre .func { color: #fde68a; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -21px; top: 5px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: 2px solid white;
+      outline: 2px solid var(--blue);
+    }
+    .tl-item.red::before { background: var(--red); outline-color: var(--red); }
+    .tl-item.green::before { background: var(--green); outline-color: var(--green); }
+    .tl-item.yellow::before { background: var(--yellow); outline-color: var(--yellow); }
+    .tl-time { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+    .tl-msg { font-weight: 500; }
+    .tl-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Pill */
+    .pill {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 2px 9px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .pill-green { background: var(--green-light); color: var(--green); }
+    .pill-red { background: var(--red-light); color: var(--red); }
+    .pill-blue { background: var(--blue-light); color: var(--blue); }
+    .pill-yellow { background: var(--yellow-light); color: var(--yellow); }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    ul { padding-left: 18px; }
+    li { margin-bottom: 4px; font-size: 13px; }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Seat Drift Investigation Report</h1>
+    <p>Daniel Caesar — Son of Spergy Tour in Bangkok &nbsp;|&nbsp; Round 1 (ขากลับ) &nbsp;|&nbsp; สายอนุสาวรีย์-สยาม</p>
+    <div class="badge-row">
+      <span class="badge">Round ID: 6a01c42f25b9d9ce27fdac3e</span>
+      <span class="badge">Event: 2026-06-09</span>
+      <span class="badge">Report: 2026-06-08</span>
+      <span class="badge">Status: CLOSED (status 0)</span>
+    </div>
+  </div>
+
+  <!-- ─── 1. Numbers ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#eff6ff; color:#2563eb">1</div>
+      Current Round State
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box yellow">
+        <div class="label">maxSeats (current)</div>
+        <div class="value">26</div>
+      </div>
+      <div class="stat-box green">
+        <div class="label">round.seats (counter)</div>
+        <div class="value">26</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">round.tempSeats</div>
+        <div class="value" style="color:var(--gray)">0</div>
+      </div>
+      <div class="stat-box red">
+        <div class="label">Actual confirmed seats (DB)</div>
+        <div class="value">28</div>
+      </div>
+      <div class="stat-box red">
+        <div class="label">Counter drift</div>
+        <div class="value">-2</div>
+      </div>
+    </div>
+
+    <div class="alert alert-red">
+      <div>
+        <strong>Available seats formula</strong>
+        System calculates: <code style="background:#fee2e2;padding:2px 6px;border-radius:4px;font-family:monospace">maxSeats − seats − max(0, tempSeats)</code> = 26 − 26 − 0 = <strong>0 available</strong><br>
+        Reality: 39 − 28 − 0 = 11 truly available (if maxSeats were 39)
+      </div>
+    </div>
+
+    <div class="alert alert-yellow">
+      <div>
+        <strong>Round is currently CLOSED (status 0)</strong>
+        Admin changed maxSeats 26 → 39 at 18:52 BKK, then reverted to 26 and closed at 18:53 BKK on June 7.
+        The 13 new bookings made in that 1-minute window need separate verification.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 2. All 24 Bookings ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#f0fdf4; color:#16a34a">2</div>
+      All 24 Confirmed Bookings (status 1)
+    </div>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px">Sorted by payment confirmation time. Rows 23–24 exceed original maxSeats=26.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Order Number</th>
+          <th>Phone</th>
+          <th>Seats</th>
+          <th>Cumulative</th>
+          <th>Confirmed At (UTC)</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>L1778507166953</td><td>0610097000</td><td>1</td><td>1</td><td>2026-05-11 13:46:45</td><td></td></tr>
+        <tr><td>2</td><td>L1778508362095</td><td>0624139282</td><td>1</td><td>2</td><td>2026-05-11 14:06:51</td><td></td></tr>
+        <tr><td>3</td><td>L1778510226954</td><td>0924520156</td><td>1</td><td>3</td><td>2026-05-11 14:37:54</td><td></td></tr>
+        <tr><td>4</td><td>L1778547869172</td><td>0844852235</td><td>1</td><td>4</td><td>2026-05-12 01:05:05</td><td></td></tr>
+        <tr><td>5</td><td>L1778552716498</td><td>0611493235</td><td>2</td><td>6</td><td>2026-05-12 02:25:47</td><td></td></tr>
+        <tr><td>6</td><td>L1778570080426</td><td>0964200285</td><td>2</td><td>8</td><td>2026-05-12 07:15:03</td><td></td></tr>
+        <tr><td>7</td><td>L1778642785288</td><td>0830568112</td><td>1</td><td>9</td><td>2026-05-13 03:26:44</td><td></td></tr>
+        <tr><td>8</td><td>L1778651984816</td><td>0933374797</td><td>1</td><td>10</td><td>2026-05-13 06:00:10</td><td></td></tr>
+        <tr><td>9</td><td>L1778665547305</td><td>0876015663</td><td>2</td><td>12</td><td>2026-05-13 09:46:59</td><td></td></tr>
+        <tr><td>10</td><td>L1778698894204</td><td>0953073560</td><td>1</td><td>13</td><td>2026-05-13 19:02:01</td><td></td></tr>
+        <tr><td>11</td><td>L1778747364674</td><td>0959609831</td><td>1</td><td>14</td><td>2026-05-14 08:29:57</td><td></td></tr>
+        <tr><td>12</td><td>L1778796979782</td><td>0634469819</td><td>1</td><td>15</td><td>2026-05-14 22:16:41</td><td></td></tr>
+        <tr><td>13</td><td>L1779114993603</td><td>0964200285</td><td>1</td><td>16</td><td>2026-05-18 14:37:06</td><td></td></tr>
+        <tr><td>14</td><td>L1779355744016</td><td>0852429550</td><td>1</td><td>17</td><td>2026-05-21 09:31:42</td><td></td></tr>
+        <tr><td>15</td><td>L1779618489247</td><td>0632156647</td><td>1</td><td>18</td><td>2026-05-24 10:28:58</td><td></td></tr>
+        <tr><td>16</td><td>L1779769003345</td><td>0971285909</td><td>1</td><td>19</td><td>2026-05-26 04:16:58</td><td></td></tr>
+        <tr><td>17</td><td>L1779779763685</td><td>0621158425</td><td>2</td><td>21</td><td>2026-05-26 07:16:35</td><td></td></tr>
+        <tr><td>18</td><td>L1779951648760</td><td>0981618576</td><td>1</td><td>22</td><td>2026-05-28 07:01:15</td><td></td></tr>
+        <tr><td>19</td><td>L1780022771752</td><td>0851593654</td><td>1</td><td>23</td><td>2026-05-29 02:46:33</td><td></td></tr>
+        <tr><td>20</td><td>L1780160537645</td><td>0956136623</td><td>1</td><td>24</td><td>2026-05-30 17:03:11</td><td></td></tr>
+        <tr><td>21</td><td>L1780216605530</td><td>0921825224</td><td>1</td><td>25</td><td>2026-05-31 08:37:16</td><td></td></tr>
+        <tr class="highlight"><td>22</td><td>L1780220861101</td><td>0914532261</td><td>1</td><td><strong>26</strong></td><td>2026-05-31 09:48:04</td><td><span class="pill pill-yellow">Hits maxSeats</span></td></tr>
+        <tr class="highlight-red"><td>23</td><td>L1780317629197</td><td>0874790888</td><td>1</td><td><strong>27</strong></td><td>2026-06-01 12:42:01</td><td><span class="pill pill-red">Exceeds maxSeats — seats not incremented</span></td></tr>
+        <tr class="highlight-red"><td>24</td><td>L1780364124071</td><td>0940061024</td><td>1</td><td><strong>28</strong></td><td>2026-06-02 01:36:03</td><td><span class="pill pill-red">Exceeds maxSeats — seats not incremented</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ─── 3. Root Cause ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#fef2f2; color:#dc2626">3</div>
+      Root Cause — Payment Webhook Never Called
+    </div>
+
+    <div class="two-col">
+      <div>
+        <p class="section-label">Evidence from CloudWatch Logs (30 days)</p>
+        <table>
+          <thead><tr><th>Signal</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td><code>PUT /api/orders/update</code> (updateFromKbank)</td><td><span class="pill pill-red">0 hits in 30 days</span></td></tr>
+            <tr><td>Payment service "Client callback successful"</td><td><span class="pill pill-green">All 24 orders ✓</span></td></tr>
+            <tr><td>ReconcileLog collection entries</td><td><span class="pill pill-red">0 entries for all 24</span></td></tr>
+            <tr><td>Booking <code>updateDate</code> matches payment callback</td><td><span class="pill pill-green">Exact match (ms) ✓</span></td></tr>
+            <tr><td><code>round.seats</code> incremented for orders 23–24</td><td><span class="pill pill-red">Never happened</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p class="section-label">Admin Actions on June 7 (Backoffice API)</p>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-time">11:52:27 UTC (18:52 BKK)</div>
+            <div class="tl-msg">GET round info for event</div>
+          </div>
+          <div class="tl-item green">
+            <div class="tl-time">11:52:27 UTC (18:52 BKK)</div>
+            <div class="tl-msg">PUT /api/rounds/adm/limits</div>
+            <div class="tl-sub">maxSeats: 26 → <strong>39</strong>, status: 1 (open)</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-time">11:52:29 UTC</div>
+            <div class="tl-msg">GET round info (verified 39)</div>
+          </div>
+          <div class="tl-item red">
+            <div class="tl-time">11:53:22 UTC (18:53 BKK)</div>
+            <div class="tl-msg">PUT /api/rounds/adm/limits</div>
+            <div class="tl-sub">maxSeats: <strong>26</strong>, status: <strong>0 (CLOSED)</strong> — reverted!</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-time">11:53:31 UTC</div>
+            <div class="tl-msg">round.updateDate set to this time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-red" style="margin-top:16px">
+      <div>
+        <strong>The real bug</strong>
+        The payment service (<code>loops-payments-api</code>) confirms payments and logs "Client callback successful" — it updates <code>booking.status</code> and <code>order.status</code> directly — but it does <strong>NOT call <code>PUT /api/orders/update</code></strong> on this booking API. Because <code>updateFromKbank.js</code> is never reached, <code>round.seats</code> is never incremented for orders 23 and 24 (which were booked after the round counter hit maxSeats=26).
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 4. Create Booking Logic ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#f0fdf4; color:#16a34a">4</div>
+      Create Booking Logic — <code>POST /api/draft-bookings</code> / <code>createBooking.js</code>
+    </div>
+
+    <div class="flow">
+
+      <!-- Step 1 -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#2563eb">1</div>
+          <div class="line"></div>
+        </div>
+        <div class="content">
+          <div class="step-title">Auth check</div>
+          <div class="step-desc">Verify <code>req.isAuth</code> (Bearer LINE token + X-Api-Key). Return 401 if not valid.</div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#2563eb">2</div>
+          <div class="line"></div>
+        </div>
+        <div class="content">
+          <div class="step-title">Load Round + MapRoute</div>
+          <div class="step-desc">Find Round by <code>roundID</code>. Verify MapRoute status is bookable (1, 4, or 11). Return 404/400 if not found or closed.</div>
+        </div>
+      </div>
+
+      <!-- Step 3 — atomic seat check -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#f59e0b">3</div>
+          <div class="line"></div>
+        </div>
+        <div class="decision">
+          <div class="step-title">Atomic seat availability check (critical)</div>
+          <div class="step-desc">
+            Uses MongoDB <code>$expr</code> inside the update query — read and write are atomic, no race condition.<br><br>
+            <strong>Formula:</strong> <code>seats + tempSeats + requestedSeats &le; maxSeats</code><br>
+            If condition passes → <code>$inc: { tempSeats: +requestedSeats }</code><br>
+            If fails → return 400 "ที่นั่งไม่เพียงพอ"
+          </div>
+        </div>
+      </div>
+
+      <div class="branch-row">
+        <div class="branch">
+          <div class="branch-label yes">SEATS AVAILABLE</div>
+          <div class="flow-step">
+            <div class="connector">
+              <div class="node" style="background:#16a34a; width:24px; height:24px; font-size:10px">✓</div>
+            </div>
+            <div class="success-box">
+              <div class="step-title">tempSeats incremented</div>
+              <div class="step-desc">Seat hold placed atomically. Proceed to booking creation.</div>
+            </div>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label no">NO SEATS</div>
+          <div class="flow-step">
+            <div class="connector">
+              <div class="node" style="background:#dc2626; width:24px; height:24px; font-size:10px">✗</div>
+            </div>
+            <div class="error-box">
+              <div class="step-title">400 — ที่นั่งไม่เพียงพอ</div>
+              <div class="step-desc">Booking blocked. tempSeats not touched.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 — Request mode check -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#f59e0b">4</div>
+          <div class="line"></div>
+        </div>
+        <div class="decision">
+          <div class="step-title">Request mode check (isRequest / requestMinimumSeats / acceptRequestWhenFull)</div>
+          <div class="step-desc">
+            If any of these round flags trigger → create <strong>DraftBooking</strong> instead.<br>
+            Returns HTTP <strong>202</strong> + <code>{ isRequest: true, draftBookingId }</code>. No Booking or Order created yet.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 — transaction -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#7c3aed">5</div>
+          <div class="line"></div>
+        </div>
+        <div class="content" style="background:#faf5ff; border-color:#d8b4fe">
+          <div class="step-title">Start MongoDB Transaction (session started BEFORE try block)</div>
+          <div class="step-desc">
+            <code>session.startTransaction()</code> — any early <code>return</code> in try must explicitly call commit or abort.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#2563eb">6</div>
+          <div class="line"></div>
+        </div>
+        <div class="content">
+          <div class="step-title">Create Booking document (status 0 — awaiting payment)</div>
+          <div class="step-desc">Stores <code>roundID</code>, <code>routeID</code>, <code>seats</code>, <code>pickUpPoints</code>, <code>dropPoints</code> as array indices (not IDs), <code>UID</code>, <code>orderNumber</code>.</div>
+        </div>
+      </div>
+
+      <!-- Step 7 -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#2563eb">7</div>
+          <div class="line"></div>
+        </div>
+        <div class="content">
+          <div class="step-title">Create Order document (status 0 — pending), set expireDate</div>
+          <div class="step-desc">Order holds QR payment details. <code>expireDate</code> triggers status-4 expiry if unpaid.</div>
+        </div>
+      </div>
+
+      <!-- Step 8 -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#2563eb">8</div>
+          <div class="line"></div>
+        </div>
+        <div class="content">
+          <div class="step-title">commitTransaction()</div>
+          <div class="step-desc">Booking + Order are now durable. tempSeats hold is live.</div>
+        </div>
+      </div>
+
+      <!-- Step 9 — post-commit -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#0891b2">9</div>
+          <div class="line"></div>
+        </div>
+        <div class="content" style="background:#f0f9ff; border-color:#bae6fd">
+          <div class="step-title">Post-commit (separate try/catch — must NOT roll back DB state)</div>
+          <div class="step-desc">
+            1. Generate KBank QR code<br>
+            2. Upload QR image to S3<br>
+            3. Send LINE push notification to user<br>
+            Failures here are Discord-logged only.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 10 — return -->
+      <div class="flow-step">
+        <div class="connector">
+          <div class="node" style="background:#16a34a">10</div>
+        </div>
+        <div class="success-box">
+          <div class="step-title">HTTP 200 — Booking created</div>
+          <div class="step-desc">Returns <code>{ err: false, msg: "", data: { booking, order } }</code>. User has QR and must pay before expireDate.</div>
+        </div>
+      </div>
+
+    </div><!-- end .flow -->
+  </div>
+
+  <!-- ─── 5. Seat State Machine ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#fef3c7; color:#d97706">5</div>
+      Seat Counter State Machine
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>tempSeats</th>
+          <th>seats</th>
+          <th>How</th>
+          <th>Where</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Booking created (status 0)</td>
+          <td><span class="pill pill-yellow">+ N</span></td>
+          <td>no change</td>
+          <td>Atomic <code>$expr + $inc</code></td>
+          <td><code>createBooking.js</code></td>
+        </tr>
+        <tr>
+          <td>Payment confirmed (webhook)</td>
+          <td><span class="pill pill-red">− N (floor 0)</span></td>
+          <td><span class="pill pill-green">+ N</span></td>
+          <td>Aggregation pipeline <code>$set</code></td>
+          <td><code>updateFromKbank.js</code> ← <strong>never called</strong></td>
+        </tr>
+        <tr>
+          <td>Payment expired (status 4)</td>
+          <td><span class="pill pill-red">− N (floor 0)</span></td>
+          <td>no change</td>
+          <td><code>$inc: { tempSeats: -N }</code></td>
+          <td><code>checkAndUpdateOrder.js</code> / <code>reconcileOrder.js</code></td>
+        </tr>
+        <tr>
+          <td>User cancels (status 2)</td>
+          <td><span class="pill pill-red">− N (floor 0)</span></td>
+          <td>no change</td>
+          <td><code>$inc: { tempSeats: -N }</code></td>
+          <td><code>cancelQRKbank.js</code></td>
+        </tr>
+        <tr class="highlight-red">
+          <td>Payment via <strong>payment service direct path</strong> (current actual behavior for orders 23–24)</td>
+          <td>Released (payment service handles)</td>
+          <td><span class="pill pill-red">NOT incremented</span></td>
+          <td>Payment service updates booking/order in DB directly — bypasses <code>updateFromKbank</code></td>
+          <td>Unknown internal path</td>
+        </tr>
+        <tr>
+          <td>Daily 3 AM cron</td>
+          <td>Reconciled to actual pending bookings</td>
+          <td>no change</td>
+          <td>Re-counts status-0 active bookings</td>
+          <td><code>cronCleanupTempSeats.js</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-blue" style="margin-top:16px">
+      <div>
+        <strong>Available seats formula (used in createBooking atomic check)</strong><br>
+        <code>maxSeats − seats − max(0, tempSeats)</code><br>
+        All three values are read and written atomically inside a single <code>findOneAndUpdate</code> with <code>$expr</code>. Never read-then-write.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 6. Code Snippet ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#1e293b; color:#e2e8f0">&lt;/&gt;</div>
+      Atomic Seat Check — Core Pattern
+    </div>
+<pre><span class="comment">// createBooking.js — atomic seat hold (no race condition possible)</span>
+<span class="keyword">const</span> round = <span class="keyword">await</span> Round.<span class="func">findOneAndUpdate</span>(
+  {
+    _id: roundID,
+    <span class="comment">// Atomic guard: only update if seats are still available</span>
+    $expr: {
+      $lte: [
+        { $add: [<span class="string">'$seats'</span>, <span class="string">'$tempSeats'</span>, requestedSeats] },
+        <span class="string">'$maxSeats'</span>
+      ]
+    }
+  },
+  { $inc: { tempSeats: requestedSeats }, updateDate: dayjs.tz().<span class="func">format</span>() },
+  { <span class="keyword">new</span>: <span class="keyword">true</span>, session }
+).<span class="func">exec</span>()
+
+<span class="keyword">if</span> (!round) {
+  <span class="comment">// Race condition safe: another request took the last seat</span>
+  <span class="keyword">return</span> res.<span class="func">status</span>(<span class="number">400</span>).<span class="func">json</span>({ err: <span class="keyword">true</span>, msg: <span class="string">'ที่นั่งไม่เพียงพอ'</span>, data: {} })
+}
+
+<span class="comment">// ─── commitTransaction() ───────────────────────────────────────────</span>
+<span class="comment">// KBank QR, S3 upload, LINE push MUST run AFTER commit in separate try/catch</span>
+<span class="comment">// Failures there must NOT roll back committed DB state</span></pre>
+
+<pre><span class="comment">// updateFromKbank.js — payment confirmed: move tempSeats → seats</span>
+<span class="comment">// This is the path that is currently NOT being called by loops-payments-api</span>
+<span class="keyword">const</span> round = <span class="keyword">await</span> Round.<span class="func">findOneAndUpdate</span>(
+  { _id: booking.roundID },
+  [{
+    $set: {
+      tempSeats: { $max: [<span class="number">0</span>, { $subtract: [<span class="string">'$tempSeats'</span>, booking.seats] }] },
+      seats:     { $add:  [<span class="string">'$seats'</span>,     booking.seats] },
+      updateDate: dayjs.tz().<span class="func">format</span>()
+    }
+  }],
+  { <span class="keyword">new</span>: <span class="keyword">true</span>, session }
+).<span class="func">exec</span>()</pre>
+  </div>
+
+  <!-- ─── 7. Action Items ─── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon" style="background:#fef2f2; color:#dc2626">!</div>
+      Action Items
+    </div>
+
+    <table>
+      <thead><tr><th>Priority</th><th>Action</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pill pill-red">High</span></td>
+          <td>Fix round.seats counter</td>
+          <td>Set <code>round.seats = 28</code> for round <code>6a01c42f25b9d9ce27fdac3e</code>. Current value 26 is 2 behind reality.</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-red">High</span></td>
+          <td>Find the real payment callback path</td>
+          <td><code>loops-payments-api</code> platform config for <code>loopsCovid19Prod</code> points to a URL that bypasses <code>PUT /api/orders/update</code>. Find and fix that callback URL to call the correct endpoint.</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-yellow">Medium</span></td>
+          <td>Check the 13 bookings from the 1-min window</td>
+          <td>Admin opened round (maxSeats 39) at 18:52, closed at 18:53 BKK on June 7. Any bookings or payments made in that window need review.</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-yellow">Medium</span></td>
+          <td>Decide on maxSeats / re-open round</td>
+          <td>Round is currently status 0 (Closed). If the event proceeds, decide correct maxSeats and re-open with the right value (e.g. 39 if bus capacity allows).</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-blue">Low</span></td>
+          <td>Add guard in updateFromKbank</td>
+          <td>Even when fixed, add a Discord alert if <code>round.seats > round.maxSeats</code> after increment, so drift is caught immediately.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Generated 2026-06-08 &nbsp;|&nbsp; loops-booking-api investigation &nbsp;|&nbsp; Round 6a01c42f25b9d9ce27fdac3e
+  </footer>
+
+</div>
+</body>
+</html>
