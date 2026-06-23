@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loops Daily v2 — Project Documentation</title>
+  <style>
+    :root {
+      --brand: #06b6d4;
+      --brand-dark: #0891b2;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #263346;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --purple: #a855f7;
+      --orange: #f97316;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    /* SIDEBAR */
+    nav {
+      position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
+      background: var(--surface); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 24px 0; z-index: 100;
+    }
+    nav .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px; font-weight: 700; color: var(--brand);
+      letter-spacing: -0.5px;
+    }
+    nav .logo span { display: block; font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+    nav ul { list-style: none; padding: 12px 0; }
+    nav ul li a {
+      display: block; padding: 8px 20px;
+      color: var(--muted); text-decoration: none; font-size: 13px;
+      border-left: 3px solid transparent; transition: all 0.15s;
+    }
+    nav ul li a:hover, nav ul li a.active {
+      color: var(--brand); border-left-color: var(--brand);
+      background: rgba(6,182,212,0.07);
+    }
+    nav ul li .section-label {
+      padding: 14px 20px 4px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; color: var(--border);
+    }
+    /* TECH STACK */
+    .tech-group { margin-bottom: 28px; }
+    .tech-group h4 { margin-bottom: 12px; }
+    .tech-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tech-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; font-size: 13px;
+    }
+    .tech-pill .tp-name { color: var(--text); font-weight: 600; }
+    .tech-pill .tp-ver { color: var(--muted); font-size: 11px; }
+    .tech-pill .tp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    /* ER DIAGRAM */
+    .er-wrap { overflow-x: auto; }
+    .er-canvas {
+      display: grid; gap: 0;
+      min-width: 860px; position: relative;
+    }
+    .er-entity {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; min-width: 180px;
+    }
+    .er-entity-head {
+      padding: 8px 12px; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .er-entity-head.cyan { background: rgba(6,182,212,0.15); color: var(--brand); }
+    .er-entity-head.green { background: rgba(34,197,94,0.15); color: var(--green); }
+    .er-entity-head.purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .er-entity-head.orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+    .er-entity-head.yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .er-field { padding: 5px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid rgba(51,65,85,0.5); display: flex; gap: 6px; align-items: center; }
+    .er-field:last-child { border-bottom: none; }
+    .er-pk { color: var(--yellow); font-size: 10px; font-weight: 700; }
+    .er-fk { color: var(--orange); font-size: 10px; font-weight: 700; }
+    .er-field-name { color: var(--text); font-family: monospace; }
+    .er-field-type { color: var(--muted); font-size: 10px; }
+    .er-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+    .er-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+    .er-rel-label { font-size: 11px; color: var(--muted); padding: 4px 10px; background: var(--surface2); border-radius: 4px; border: 1px solid var(--border); white-space: nowrap; }
+    .er-rel-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    /* C4 */
+    .c4-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+    .c4-boundary {
+      border: 2px dashed var(--border); border-radius: 12px;
+      padding: 20px; margin: 12px 0; position: relative;
+    }
+    .c4-boundary-label {
+      position: absolute; top: -12px; left: 16px;
+      background: var(--surface); padding: 2px 10px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--muted);
+    }
+    .c4-boundary.sys { border-color: var(--brand); }
+    .c4-boundary.sys .c4-boundary-label { color: var(--brand); }
+    .c4-boxes { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .c4-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 20px; text-align: center;
+      min-width: 140px; max-width: 180px;
+    }
+    .c4-box .c4-icon { font-size: 24px; margin-bottom: 6px; }
+    .c4-box .c4-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .c4-box .c4-tech { font-size: 10px; color: var(--brand); font-family: monospace; margin-bottom: 6px; }
+    .c4-box .c4-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .c4-box.person { border-color: var(--green); }
+    .c4-box.person .c4-name { color: var(--green); }
+    .c4-box.external { border-color: var(--muted); opacity: 0.7; }
+    .c4-box.highlight { border-color: var(--brand); }
+    .c4-box.container { border-color: var(--brand); background: rgba(6,182,212,0.05); }
+    .c4-box.component { border-color: var(--purple); background: rgba(168,85,247,0.05); }
+    .c4-box .c4-name { color: var(--text); }
+    .c4-arrow-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+    .c4-arrow { color: var(--muted); font-size: 20px; }
+    .c4-arrow-label { font-size: 10px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; }
+    .c4-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 8px 0; }
+    /* SECURITY */
+    .sec-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px;
+    }
+    .sec-rule { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .sec-rule:last-child { border-bottom: none; }
+    .sec-rule-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .sec-rule-body .sec-rule-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .sec-rule-body .sec-rule-detail { font-size: 12px; color: var(--muted); }
+    .policy-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-block; margin-left: 6px; }
+    .policy-enforce { background: rgba(239,68,68,0.15); color: var(--red); }
+    .policy-recommend { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    /* MAIN */
+    main { margin-left: 240px; padding: 48px 56px; max-width: 1100px; }
+    section { padding: 64px 0 0; }
+    h1 { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+    h2 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 24px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 17px; font-weight: 600; color: #fff; margin: 24px 0 12px; }
+    h4 { font-size: 14px; font-weight: 600; color: var(--brand); margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    p { color: var(--muted); margin-bottom: 12px; font-size: 14px; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--surface2); color: var(--brand);
+      padding: 2px 6px; border-radius: 4px; font-size: 12px;
+    }
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 0%, #1a2744 100%);
+      border: 1px solid var(--border); border-radius: 16px;
+      padding: 40px 48px; margin-bottom: 8px;
+    }
+    .hero h1 { font-size: 38px; margin-bottom: 8px; }
+    .hero p { font-size: 16px; color: var(--muted); margin: 0; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+    .badge {
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+      border: 1px solid;
+    }
+    .badge-cyan  { color: var(--brand); border-color: var(--brand); background: rgba(6,182,212,0.1); }
+    .badge-green { color: var(--green); border-color: var(--green); background: rgba(34,197,94,0.1); }
+    .badge-purple{ color: var(--purple); border-color: var(--purple); background: rgba(168,85,247,0.1); }
+    .badge-orange{ color: var(--orange); border-color: var(--orange); background: rgba(249,115,22,0.1); }
+    /* GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    /* CARD */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px;
+    }
+    .card h3 { margin-top: 0; }
+    .card-icon { font-size: 28px; margin-bottom: 12px; }
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; padding: 10px 14px;
+      background: var(--surface2); color: var(--brand);
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    td:first-child { color: var(--text); font-family: 'SF Mono', monospace; font-size: 12px; }
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    /* FLOW */
+    .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 20px 0; }
+    .flow-step {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 16px; font-size: 13px;
+      text-align: center; min-width: 100px;
+    }
+    .flow-step .step-num { font-size: 10px; color: var(--brand); font-weight: 700; margin-bottom: 2px; }
+    .flow-step .step-name { color: var(--text); font-weight: 500; font-size: 12px; }
+    .flow-arrow { color: var(--brand); padding: 0 6px; font-size: 18px; }
+    /* ARCH DIAGRAM */
+    .arch-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px; position: relative;
+    }
+    .arch-layer {
+      border: 1px dashed var(--border); border-radius: 10px;
+      padding: 16px; margin-bottom: 16px; position: relative;
+    }
+    .arch-layer-label {
+      position: absolute; top: -10px; left: 16px;
+      background: var(--surface); padding: 0 8px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--brand);
+    }
+    .arch-boxes { display: flex; gap: 10px; flex-wrap: wrap; }
+    .arch-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; font-size: 12px;
+      font-weight: 500; color: var(--text); white-space: nowrap;
+    }
+    .arch-box.highlight { border-color: var(--brand); color: var(--brand); }
+    .arch-box.green { border-color: var(--green); color: var(--green); }
+    .arch-box.purple { border-color: var(--purple); color: var(--purple); }
+    .arch-box.orange { border-color: var(--orange); color: var(--orange); }
+    .arch-connector { text-align: center; color: var(--border); font-size: 20px; margin: 4px 0; }
+    /* ROLE CARD */
+    .role-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .role-card .role-icon { font-size: 32px; }
+    .role-card .role-name { font-size: 18px; font-weight: 700; color: #fff; }
+    .role-card ul { list-style: none; }
+    .role-card ul li { font-size: 13px; color: var(--muted); padding: 4px 0; display: flex; align-items: flex-start; gap: 6px; }
+    .role-card ul li::before { content: '→'; color: var(--brand); flex-shrink: 0; }
+    /* STATUS */
+    .status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 4px; }
+    .status-green { background: rgba(34,197,94,0.15); color: var(--green); }
+    .status-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .status-red { background: rgba(239,68,68,0.15); color: var(--red); }
+    .status-blue { background: rgba(6,182,212,0.15); color: var(--brand); }
+    .status-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+    /* TASK TABLE */
+    .effort-s { color: var(--green); font-weight: 600; }
+    .effort-m { color: var(--yellow); font-weight: 600; }
+    .effort-l { color: var(--orange); font-weight: 600; }
+    .effort-xl { color: var(--red); font-weight: 600; }
+    /* DATA FLOW */
+    .dflow { display: flex; flex-direction: column; gap: 12px; }
+    .dflow-row { display: flex; align-items: center; gap: 12px; }
+    .dflow-node {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 500;
+      min-width: 140px; text-align: center;
+    }
+    .dflow-node.cyan { border-color: var(--brand); color: var(--brand); }
+    .dflow-node.green { border-color: var(--green); color: var(--green); }
+    .dflow-node.purple { border-color: var(--purple); color: var(--purple); }
+    .dflow-node.orange { border-color: var(--orange); color: var(--orange); }
+    .dflow-arrow { color: var(--muted); font-size: 18px; }
+    .dflow-label { font-size: 11px; color: var(--muted); }
+    /* DIVIDER */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+    /* SCROLL */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="logo">
+    Loops Daily v2
+    <span>Transportation Booking System</span>
+  </div>
+  <ul>
+    <li><div class="section-label">Overview</div></li>
+    <li><a href="#features">Key Features</a></li>
+    <li><a href="#techstack">Tech Stack</a></li>
+    <li><a href="#userflow">User Flow</a></li>
+    <li><div class="section-label">Technical</div></li>
+    <li><a href="#datamodel">Data Model</a></li>
+    <li><a href="#erdiagram">ER Diagram</a></li>
+    <li><a href="#architecture">System Architecture</a></li>
+    <li><a href="#dataflow">Data Flow</a></li>
+    <li><a href="#c4diagram">C4 Diagram</a></li>
+    <li><div class="section-label">Governance</div></li>
+    <li><a href="#security">Policy &amp; Security</a></li>
+    <li><div class="section-label">Planning</div></li>
+    <li><a href="#estimation">Task Estimation</a></li>
+  </ul>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Loops Daily v2</h1>
+    <p>A full-stack shuttle/transportation booking system serving passengers, drivers, and administrators — built with Next.js 15, tRPC, Drizzle ORM, Supabase, and LINE LIFF.</p>
+    <div class="badges">
+      <span class="badge badge-cyan">Next.js 15</span>
+      <span class="badge badge-cyan">tRPC 11</span>
+      <span class="badge badge-cyan">Drizzle ORM</span>
+      <span class="badge badge-green">Supabase</span>
+      <span class="badge badge-green">PostgreSQL</span>
+      <span class="badge badge-purple">LINE LIFF</span>
+      <span class="badge badge-orange">AWS SNS</span>
+      <span class="badge badge-orange">TypeScript</span>
+    </div>
+  </div>
+
+  <!-- =============================== TECH STACK =============================== -->
+  <section id="techstack">
+    <h2>Tech Stack</h2>
+
+    <div class="grid-2">
+
+      <div class="sec-card">
+        <h3 style="margin-top:0">Frontend</h3>
+        <div class="tech-group">
+          <h4>Framework & Runtime</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#fff"></div><span class="tp-name">Next.js</span><span class="tp-ver">15.5.9 — App Router + Turbopack</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#61dafb"></div><span class="tp-name">React</span><span class="tp-ver">19.1.0</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#3178c6"></div><span class="tp-name">TypeScript</span><span class="tp-ver">5.9.3 — strict mode</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>Styling</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#38bdf8"></div><span class="tp-name">Tailwind CSS</span><span class="tp-ver">v4 — PostCSS integration</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">class-variance-authority</span><span class="tp-ver">0.7.1</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">Lucide React</span><span class="tp-ver">0.544.0 — icons</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>State & Data Fetching</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#ff4154"></div><span class="tp-name">TanStack Query</span><span class="tp-ver">5.90.21 — server state</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#398ccb"></div><span class="tp-name">tRPC Client</span><span class="tp-ver">11.10.0 — type-safe calls</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">SuperJSON</span><span class="tp-ver">2.2.6 — serialization</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <h3 style="margin-top:0">Backend & API</h3>
+        <div class="tech-group">
+          <h4>API Layer</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#398ccb"></div><span class="tp-name">tRPC</span><span class="tp-ver">11.10.0 — end-to-end type safety</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#e11d48"></div><span class="tp-name">Zod</span><span class="tp-ver">4.3.6 — schema validation</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">drizzle-zod</span><span class="tp-ver">0.8.3 — inferred validators</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>Database</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#c07b3f"></div><span class="tp-name">Drizzle ORM</span><span class="tp-ver">0.44.7</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#336791"></div><span class="tp-name">PostgreSQL</span><span class="tp-ver">via Supabase</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#336791"></div><span class="tp-name">Vercel Postgres</span><span class="tp-ver">0.10.0 — driver</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>Auth</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#3ecf8e"></div><span class="tp-name">Supabase Auth</span><span class="tp-ver">Google + Email</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#06c755"></div><span class="tp-name">LINE Login</span><span class="tp-ver">Bot SDK 10.6.0</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#06c755"></div><span class="tp-name">LIFF</span><span class="tp-ver">2.27.3 — in-app framework</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <h3 style="margin-top:0">External Services</h3>
+        <div class="tech-group">
+          <h4>Notifications</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#ff9900"></div><span class="tp-name">AWS SNS</span><span class="tp-ver">SMS OTP delivery</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#ff9900"></div><span class="tp-name">AWS S3</span><span class="tp-ver">File / asset storage</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>Payments</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#1eb27b"></div><span class="tp-name">KBank API</span><span class="tp-ver">PromptPay QR + Webhook</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>QR Code</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">qrcode</span><span class="tp-ver">1.5.4 — generation</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">@zxing/browser</span><span class="tp-ver">scanning</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <h3 style="margin-top:0">Infrastructure & Tooling</h3>
+        <div class="tech-group">
+          <h4>Deployment</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#fff"></div><span class="tp-name">Vercel</span><span class="tp-ver">Hosting + Edge Functions</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#3ecf8e"></div><span class="tp-name">Supabase</span><span class="tp-ver">Managed Postgres + Auth</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>Package & Build</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#f69220"></div><span class="tp-name">pnpm</span><span class="tp-ver">10.6.2 — package manager</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#fff"></div><span class="tp-name">Turbopack</span><span class="tp-ver">Next.js 15 bundler</span></div>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4>Utilities</h4>
+          <div class="tech-pills">
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">date-fns</span><span class="tp-ver">+ date-fns-tz — time handling</span></div>
+            <div class="tech-pill"><div class="tp-dot" style="background:#94a3b8"></div><span class="tp-name">Drizzle Kit</span><span class="tp-ver">0.31.9 — migrations</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>Architecture Decision Record — Key Choices</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td>API style</td><td>tRPC (not REST/GraphQL)</td><td>Full TypeScript end-to-end type safety without codegen; ideal for Next.js monorepo</td></tr>
+          <tr><td>ORM</td><td>Drizzle (not Prisma)</td><td>Lightweight, SQL-close, superior TypeScript inference, no runtime overhead</td></tr>
+          <tr><td>Auth</td><td>Supabase + LINE hybrid</td><td>Thai market requires LINE; Supabase handles Google/email with minimal setup</td></tr>
+          <tr><td>CSS</td><td>Tailwind v4</td><td>Zero-config PostCSS pipeline, no JS-in-CSS overhead, v4 CSS variables approach</td></tr>
+          <tr><td>SMS</td><td>AWS SNS (not Twilio)</td><td>Lower cost for Thailand region, existing AWS credential infrastructure</td></tr>
+          <tr><td>Payment</td><td>KBank PromptPay QR</td><td>Dominant Thai payment method; webhook-driven confirmation is reliable</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================== KEY FEATURES =============================== -->
+  <section id="features">
+    <h2>Key Features</h2>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🎟️</div>
+        <h3>Smart Booking System</h3>
+        <p>Multi-step booking flow with real-time seat availability, point-pair pricing, and automatic expiration cleanup.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>LINE LIFF Integration</h3>
+        <p>Deep LINE platform integration via LIFF framework. Users can authenticate with LINE and use the app inside the LINE mobile app.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💳</div>
+        <h3>QR Payment (KBank)</h3>
+        <p>KBank PromptPay QR payment integration with webhook-driven confirmation and payment expiration management.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3>QR Code Check-in</h3>
+        <p>Drivers scan passenger profile QR codes to confirm boarding. Time-window validation ensures check-in only opens 30 min before departure.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <h3>GPS Location Tracking</h3>
+        <p>Real-time driver location logging, route progress tracking per pickup point, and passenger GPS-tagged check-in records.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h3>Role-Based Access</h3>
+        <p>Three isolated user roles (passenger / driver / admin) each with dedicated UI, middleware protection, and tRPC procedure guards.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔐</div>
+        <h3>Hybrid Authentication</h3>
+        <p>Supabase Auth (Google, email) + LINE Login with cookie-based session coordination and OTP phone verification via AWS SNS.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚌</div>
+        <h3>Driver Operations Hub</h3>
+        <p>Full driver workflow: duty sessions, vehicle inspection checklists, round assignment lifecycle, and passenger manifest management.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>Admin Control Panel</h3>
+        <p>Manage routes, rounds, seat pricing, user whitelist, and view dashboard statistics across all entities.</p>
+      </div>
+    </div>
+
+    <h3>Feature Matrix by Role</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Passenger</th><th>Driver</th><th>Admin</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Search & book routes</td><td>✅</td><td>—</td><td>—</td></tr>
+          <tr><td>QR code for boarding</td><td>✅ (receive)</td><td>✅ (scan)</td><td>—</td></tr>
+          <tr><td>Payment (KBank QR)</td><td>✅</td><td>—</td><td>—</td></tr>
+          <tr><td>Booking history</td><td>✅</td><td>—</td><td>—</td></tr>
+          <tr><td>Phone OTP verification</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>Round selection & duty</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>Vehicle registration</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>Vehicle inspection</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>GPS location logging</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>Route management</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>Round scheduling</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>Pricing configuration</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>User whitelist</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>Dashboard statistics</td><td>—</td><td>—</td><td>✅</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================== USER FLOW =============================== -->
+  <section id="userflow">
+    <h2>User Flow</h2>
+
+    <h3>Authentication & Role Routing</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="step-num">START</div><div class="step-name">Landing Page</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">AUTH</div><div class="step-name">Login<br/>(Google / LINE / Email)</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">CHECK</div><div class="step-name">Role Detection</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">ROUTE</div><div class="step-name">Dashboard<br/>(by role)</div></div>
+    </div>
+
+    <div class="grid-3" style="margin-top:8px;">
+      <div class="role-card">
+        <div class="role-icon">🧑‍💼</div>
+        <div class="role-name">Passenger</div>
+        <ul>
+          <li>Login → Dashboard</li>
+          <li>Select departure & arrival city</li>
+          <li>Pick date → pick round/time</li>
+          <li>Enter details + pickup point</li>
+          <li>Pay via KBank QR</li>
+          <li>Receive booking QR code</li>
+          <li>Board — driver scans QR</li>
+          <li>View history & profile</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">🚌</div>
+        <div class="role-name">Driver</div>
+        <ul>
+          <li>Login → Driver Portal</li>
+          <li>Start duty session</li>
+          <li>Pre-trip vehicle inspection</li>
+          <li>Browse & accept round</li>
+          <li>View passenger manifest</li>
+          <li>Start round → depart</li>
+          <li>Scan QR codes per stop</li>
+          <li>Complete round → end session</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">⚙️</div>
+        <div class="role-name">Admin</div>
+        <ul>
+          <li>Login → Admin Panel</li>
+          <li>Create/manage routes & points</li>
+          <li>Schedule rounds with pricing</li>
+          <li>Manage user whitelist</li>
+          <li>Configure point-pair pricing</li>
+          <li>Monitor dashboard stats</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Passenger Booking Flow (detailed)</h3>
+    <div class="flow" style="flex-wrap:wrap; row-gap: 12px;">
+      <div class="flow-step"><div class="step-num">1</div><div class="step-name">Dashboard</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">2</div><div class="step-name">Select Route</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">3</div><div class="step-name">Pick Date</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">4</div><div class="step-name">Pick Round</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">5</div><div class="step-name">Passenger Details</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">6</div><div class="step-name">Pickup Point</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">7</div><div class="step-name">Review &amp; Pay</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">8</div><div class="step-name">KBank QR</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">9</div><div class="step-name">Confirmation</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">10</div><div class="step-name">QR Check-in</div></div>
+    </div>
+
+    <h3>Driver Round Lifecycle</h3>
+    <div class="flow" style="flex-wrap:wrap; row-gap:12px;">
+      <div class="flow-step" style="border-color:var(--muted)"><div class="step-num">OFFERED</div><div class="step-name">Round available</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--brand)"><div class="step-num">ACCEPTED</div><div class="step-name">Driver selects</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--yellow)"><div class="step-num">STARTED</div><div class="step-name">Round begins</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--orange)"><div class="step-num">DEPARTED</div><div class="step-name">En route</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--green)"><div class="step-num">COMPLETED</div><div class="step-name">Journey done</div></div>
+    </div>
+  </section>
+
+  <!-- =============================== DATA MODEL =============================== -->
+  <section id="datamodel">
+    <h2>Data Model</h2>
+    <p>The database has <strong>24 tables</strong> across 4 functional domains, implemented with Drizzle ORM on PostgreSQL (Supabase).</p>
+
+    <h3>Domain 1 — User Management</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>users</td>
+            <td>id, supabase_id, role, email, line_user_id, qr_code, phone</td>
+            <td>Unified user record across all auth providers. Role drives UI and permissions.</td>
+          </tr>
+          <tr>
+            <td>phoneVerifications</td>
+            <td>user_id, phone, otp_code, expires_at, verified</td>
+            <td>One-time password tokens for phone number verification via AWS SNS.</td>
+          </tr>
+          <tr>
+            <td>whitelists</td>
+            <td>user_id, route_id, granted_by, created_at</td>
+            <td>Admin-controlled per-user route access control.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Domain 2 — Transportation</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>routes</td>
+            <td>id, name, departure_location, arrival_location, status</td>
+            <td>Named transportation corridors between two cities.</td>
+          </tr>
+          <tr>
+            <td>routePoints</td>
+            <td>route_id, name, sequence, lat, lng, type (pickup/dropoff)</td>
+            <td>Ordered stops along a route with GPS coordinates.</td>
+          </tr>
+          <tr>
+            <td>vehicles</td>
+            <td>id, license_plate, capacity, status, driver_id</td>
+            <td>Vehicle registry with capacity and operational status.</td>
+          </tr>
+          <tr>
+            <td>driverVehicles</td>
+            <td>driver_id, vehicle_id, assigned_at</td>
+            <td>Maps drivers to their assigned vehicles.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Domain 3 — Bookings & Payments</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>rounds</td>
+            <td>route_id, date, departure_time, total_seats, available_seats, status, price</td>
+            <td>A scheduled trip instance for a route. Drivers are assigned to rounds.</td>
+          </tr>
+          <tr>
+            <td>bookings</td>
+            <td>user_id, round_id, seats, pickup_point_id, dropoff_point_id, status</td>
+            <td>Core booking record linking passenger to a round and stop pair.</td>
+          </tr>
+          <tr>
+            <td>seatAssignments</td>
+            <td>booking_id, seat_number, passenger_name</td>
+            <td>Individual seat-level tracking within a booking.</td>
+          </tr>
+          <tr>
+            <td>payments</td>
+            <td>booking_id, amount, status, qr_code_url, expires_at, paid_at</td>
+            <td>Payment record with KBank QR reference and expiration.</td>
+          </tr>
+          <tr>
+            <td>bookingPayment</td>
+            <td>booking_id, payment_id</td>
+            <td>Junction table linking bookings to payments (supports multi-payment scenarios).</td>
+          </tr>
+          <tr>
+            <td>pointPairPricing</td>
+            <td>route_id, pickup_point_id, dropoff_point_id, price</td>
+            <td>Dynamic price per pickup↔dropoff pair on a route.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Domain 4 — Driver Operations</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>driverRoundAssignments</td>
+            <td>driver_id, round_id, status (offered→accepted→started→completed)</td>
+            <td>Tracks which driver is assigned to which round and their progress.</td>
+          </tr>
+          <tr>
+            <td>passengerCheckIns</td>
+            <td>booking_id, driver_id, scanned_at, driver_lat, driver_lng, status</td>
+            <td>QR scan event with GPS context for each boarded passenger.</td>
+          </tr>
+          <tr>
+            <td>driverSessions</td>
+            <td>driver_id, started_at, ended_at, break_started_at</td>
+            <td>Duty period tracking with break logging.</td>
+          </tr>
+          <tr>
+            <td>driverLocations</td>
+            <td>driver_id, lat, lng, recorded_at</td>
+            <td>Append-only GPS trail of driver position over time.</td>
+          </tr>
+          <tr>
+            <td>vehicleInspections</td>
+            <td>vehicle_id, driver_id, type (pre/post), status, notes, inspected_at</td>
+            <td>Pre-trip and post-trip vehicle condition records.</td>
+          </tr>
+          <tr>
+            <td>driverStatus</td>
+            <td>driver_id, status (available/on_duty/on_break/off_duty)</td>
+            <td>Current real-time availability state of a driver.</td>
+          </tr>
+          <tr>
+            <td>routeProgress</td>
+            <td>round_id, point_id, status (arrived/departed), recorded_at</td>
+            <td>Per-stop progress events during an active round.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Key Enum Values</h3>
+    <div class="grid-2">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Enum</th><th>Values</th></tr></thead>
+          <tbody>
+            <tr><td>user_role</td><td>admin · passenger · driver</td></tr>
+            <tr><td>round_status</td><td>available · assigned · unassigned · completed · cancelled · closed · full</td></tr>
+            <tr><td>booking_status</td><td>pending · confirmed · cancelled · completed · expired</td></tr>
+            <tr><td>payment_status</td><td>pending · paid · failed · refunded · expired</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Enum</th><th>Values</th></tr></thead>
+          <tbody>
+            <tr><td>driver_round_status</td><td>offered · accepted · rejected · started · completed</td></tr>
+            <tr><td>checkin_status</td><td>pending · checked_in · no_show · cancelled</td></tr>
+            <tr><td>driver_status</td><td>available · on_duty · on_break · off_duty · unavailable</td></tr>
+            <tr><td>inspection_status</td><td>passed · failed · needs_attention</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== ER DIAGRAM =============================== -->
+  <section id="erdiagram">
+    <h2>ER Diagram</h2>
+    <p>Entity-relationship overview of the 24-table PostgreSQL schema. Primary keys (<span class="er-pk">PK</span>) and foreign keys (<span class="er-fk">FK</span>) are marked per field.</p>
+
+    <h3>Domain: User Management</h3>
+    <div class="er-wrap"><div class="er-grid" style="grid-template-columns: repeat(3,1fr);">
+      <div class="er-entity">
+        <div class="er-entity-head cyan">users</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-field-name">supabase_id</span><span class="er-field-type">text unique</span></div>
+        <div class="er-field"><span class="er-field-name">role</span><span class="er-field-type">user_role enum</span></div>
+        <div class="er-field"><span class="er-field-name">email</span><span class="er-field-type">text unique</span></div>
+        <div class="er-field"><span class="er-field-name">line_user_id</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">phone</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">qr_code</span><span class="er-field-type">text unique</span></div>
+        <div class="er-field"><span class="er-field-name">created_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head cyan">phoneVerifications</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">user_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-field-name">phone</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">otp_code</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">expires_at</span><span class="er-field-type">timestamp</span></div>
+        <div class="er-field"><span class="er-field-name">verified</span><span class="er-field-type">boolean</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head cyan">whitelists</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">user_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">route_id</span><span class="er-field-type">→ routes</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">granted_by</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-field-name">created_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+    </div></div>
+
+    <h3>Domain: Transportation</h3>
+    <div class="er-wrap"><div class="er-grid">
+      <div class="er-entity">
+        <div class="er-entity-head green">routes</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-field-name">name</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">departure_location</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">arrival_location</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">route_status enum</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head green">routePoints</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">route_id</span><span class="er-field-type">→ routes</span></div>
+        <div class="er-field"><span class="er-field-name">name</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">sequence</span><span class="er-field-type">integer</span></div>
+        <div class="er-field"><span class="er-field-name">lat / lng</span><span class="er-field-type">decimal</span></div>
+        <div class="er-field"><span class="er-field-name">type</span><span class="er-field-type">pickup | dropoff</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head green">vehicles</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-field-name">license_plate</span><span class="er-field-type">text unique</span></div>
+        <div class="er-field"><span class="er-field-name">capacity</span><span class="er-field-type">integer</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">vehicle_status enum</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head green">driverVehicles</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">vehicle_id</span><span class="er-field-type">→ vehicles</span></div>
+        <div class="er-field"><span class="er-field-name">assigned_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+    </div></div>
+
+    <h3>Domain: Bookings & Payments</h3>
+    <div class="er-wrap"><div class="er-grid">
+      <div class="er-entity">
+        <div class="er-entity-head purple">rounds</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">route_id</span><span class="er-field-type">→ routes</span></div>
+        <div class="er-field"><span class="er-field-name">date</span><span class="er-field-type">date</span></div>
+        <div class="er-field"><span class="er-field-name">departure_time</span><span class="er-field-type">time</span></div>
+        <div class="er-field"><span class="er-field-name">total_seats</span><span class="er-field-type">integer</span></div>
+        <div class="er-field"><span class="er-field-name">available_seats</span><span class="er-field-type">integer</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">round_status enum</span></div>
+        <div class="er-field"><span class="er-field-name">price</span><span class="er-field-type">decimal</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head purple">bookings</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">user_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">round_id</span><span class="er-field-type">→ rounds</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">pickup_point_id</span><span class="er-field-type">→ routePoints</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">dropoff_point_id</span><span class="er-field-type">→ routePoints</span></div>
+        <div class="er-field"><span class="er-field-name">seats</span><span class="er-field-type">integer</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">booking_status enum</span></div>
+        <div class="er-field"><span class="er-field-name">total_price</span><span class="er-field-type">decimal</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head purple">payments</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">booking_id</span><span class="er-field-type">→ bookings</span></div>
+        <div class="er-field"><span class="er-field-name">amount</span><span class="er-field-type">decimal</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">payment_status enum</span></div>
+        <div class="er-field"><span class="er-field-name">qr_code_url</span><span class="er-field-type">text</span></div>
+        <div class="er-field"><span class="er-field-name">expires_at</span><span class="er-field-type">timestamp</span></div>
+        <div class="er-field"><span class="er-field-name">paid_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head purple">pointPairPricing</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">route_id</span><span class="er-field-type">→ routes</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">pickup_point_id</span><span class="er-field-type">→ routePoints</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">dropoff_point_id</span><span class="er-field-type">→ routePoints</span></div>
+        <div class="er-field"><span class="er-field-name">price</span><span class="er-field-type">decimal</span></div>
+      </div>
+    </div></div>
+    <div class="er-wrap" style="margin-top:-4px"><div class="er-grid" style="grid-template-columns: repeat(2,1fr);">
+      <div class="er-entity">
+        <div class="er-entity-head purple">seatAssignments</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">booking_id</span><span class="er-field-type">→ bookings</span></div>
+        <div class="er-field"><span class="er-field-name">seat_number</span><span class="er-field-type">integer</span></div>
+        <div class="er-field"><span class="er-field-name">passenger_name</span><span class="er-field-type">text</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head purple">bookingPayment</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">booking_id</span><span class="er-field-type">→ bookings</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">payment_id</span><span class="er-field-type">→ payments</span></div>
+      </div>
+    </div></div>
+
+    <h3>Domain: Driver Operations</h3>
+    <div class="er-wrap"><div class="er-grid">
+      <div class="er-entity">
+        <div class="er-entity-head orange">driverRoundAssignments</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">round_id</span><span class="er-field-type">→ rounds</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">driver_round_status</span></div>
+        <div class="er-field"><span class="er-field-name">accepted_at</span><span class="er-field-type">timestamp</span></div>
+        <div class="er-field"><span class="er-field-name">completed_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head orange">passengerCheckIns</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">booking_id</span><span class="er-field-type">→ bookings</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-field-name">scanned_at</span><span class="er-field-type">timestamp</span></div>
+        <div class="er-field"><span class="er-field-name">driver_lat / lng</span><span class="er-field-type">decimal</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">checkin_status enum</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head orange">driverLocations</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-field-name">lat / lng</span><span class="er-field-type">decimal</span></div>
+        <div class="er-field"><span class="er-field-name">recorded_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head orange">routeProgress</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">round_id</span><span class="er-field-type">→ rounds</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">point_id</span><span class="er-field-type">→ routePoints</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">arrived | departed</span></div>
+        <div class="er-field"><span class="er-field-name">recorded_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+    </div></div>
+    <div class="er-wrap" style="margin-top:-4px"><div class="er-grid" style="grid-template-columns: repeat(3,1fr);">
+      <div class="er-entity">
+        <div class="er-entity-head orange">driverSessions</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-field-name">started_at</span><span class="er-field-type">timestamp</span></div>
+        <div class="er-field"><span class="er-field-name">ended_at</span><span class="er-field-type">timestamp</span></div>
+        <div class="er-field"><span class="er-field-name">break_started_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head orange">vehicleInspections</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">vehicle_id</span><span class="er-field-type">→ vehicles</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users</span></div>
+        <div class="er-field"><span class="er-field-name">type</span><span class="er-field-type">pre | post trip</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">inspection_status</span></div>
+      </div>
+      <div class="er-entity">
+        <div class="er-entity-head orange">driverStatus</div>
+        <div class="er-field"><span class="er-pk">PK</span><span class="er-field-name">id</span><span class="er-field-type">uuid</span></div>
+        <div class="er-field"><span class="er-fk">FK</span><span class="er-field-name">driver_id</span><span class="er-field-type">→ users unique</span></div>
+        <div class="er-field"><span class="er-field-name">status</span><span class="er-field-type">driver_status enum</span></div>
+        <div class="er-field"><span class="er-field-name">updated_at</span><span class="er-field-type">timestamp</span></div>
+      </div>
+    </div></div>
+
+    <h3>Key Relationships</h3>
+    <div class="sec-card">
+      <div class="er-rel-row"><div class="dflow-node cyan" style="min-width:100px;font-size:12px;">users</div><span style="color:var(--muted)">1 ──────────── N</span><div class="dflow-node purple" style="min-width:100px;font-size:12px;">bookings</div><span class="er-rel-label">A user can have many bookings</span></div>
+      <div class="er-rel-row"><div class="dflow-node green" style="min-width:100px;font-size:12px;">routes</div><span style="color:var(--muted)">1 ──────────── N</span><div class="dflow-node purple" style="min-width:100px;font-size:12px;">rounds</div><span class="er-rel-label">A route has many scheduled rounds</span></div>
+      <div class="er-rel-row"><div class="dflow-node purple" style="min-width:100px;font-size:12px;">rounds</div><span style="color:var(--muted)">1 ──────────── N</span><div class="dflow-node purple" style="min-width:100px;font-size:12px;">bookings</div><span class="er-rel-label">A round contains many passenger bookings</span></div>
+      <div class="er-rel-row"><div class="dflow-node purple" style="min-width:100px;font-size:12px;">bookings</div><span style="color:var(--muted)">1 ──────────── N</span><div class="dflow-node purple" style="min-width:100px;font-size:12px;">payments</div><span class="er-rel-label">Via bookingPayment junction</span></div>
+      <div class="er-rel-row"><div class="dflow-node cyan" style="min-width:100px;font-size:12px;">users (driver)</div><span style="color:var(--muted)">1 ──────────── N</span><div class="dflow-node orange" style="min-width:100px;font-size:12px;">driverRoundAssignments</div><span class="er-rel-label">Driver accepts multiple rounds over time</span></div>
+      <div class="er-rel-row"><div class="dflow-node purple" style="min-width:100px;font-size:12px;">bookings</div><span style="color:var(--muted)">1 ──────────── 1</span><div class="dflow-node orange" style="min-width:100px;font-size:12px;">passengerCheckIns</div><span class="er-rel-label">One check-in event per booking</span></div>
+      <div class="er-rel-row"><div class="dflow-node green" style="min-width:100px;font-size:12px;">routes</div><span style="color:var(--muted)">1 ──────────── N</span><div class="dflow-node green" style="min-width:100px;font-size:12px;">routePoints</div><span class="er-rel-label">Ordered pickup/dropoff stops per route</span></div>
+    </div>
+  </section>
+
+  <!-- =============================== ARCHITECTURE =============================== -->
+  <section id="architecture">
+    <h2>System Architecture Diagram</h2>
+
+    <div class="arch-diagram">
+
+      <!-- CLIENT LAYER -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Client Layer</div>
+        <div class="arch-boxes">
+          <div class="arch-box highlight">Browser / PWA</div>
+          <div class="arch-box purple">LINE App (LIFF)</div>
+          <div class="arch-box">Passenger UI</div>
+          <div class="arch-box">Driver UI</div>
+          <div class="arch-box">Admin UI</div>
+        </div>
+      </div>
+
+      <div class="arch-connector">↕ HTTPS / React Query + tRPC</div>
+
+      <!-- APP LAYER -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Application Layer — Next.js 15 (App Router + Turbopack)</div>
+        <div class="arch-boxes">
+          <div class="arch-box highlight">tRPC API Handlers</div>
+          <div class="arch-box">Middleware (route guards)</div>
+          <div class="arch-box">Next.js Server Components</div>
+          <div class="arch-box">API Routes (REST)</div>
+          <div class="arch-box orange">Webhook Handler (KBank)</div>
+        </div>
+      </div>
+
+      <div class="arch-connector">↕</div>
+
+      <!-- BUSINESS LAYER -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Business Logic Layer</div>
+        <div class="arch-boxes">
+          <div class="arch-box">Booking Validator</div>
+          <div class="arch-box">Seat Reservation</div>
+          <div class="arch-box">Payment Expiry Cleanup</div>
+          <div class="arch-box">QR Code Service</div>
+          <div class="arch-box">Driver Assignment Logic</div>
+        </div>
+      </div>
+
+      <div class="arch-connector">↕</div>
+
+      <!-- DATA LAYER -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Data Layer</div>
+        <div class="arch-boxes">
+          <div class="arch-box green">Drizzle ORM</div>
+          <div class="arch-box green">PostgreSQL (Supabase)</div>
+          <div class="arch-box green">Supabase Auth</div>
+        </div>
+      </div>
+
+      <div class="arch-connector">↕ External Integrations</div>
+
+      <!-- EXTERNAL LAYER -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">External Services</div>
+        <div class="arch-boxes">
+          <div class="arch-box purple">LINE Login / LIFF SDK</div>
+          <div class="arch-box orange">AWS SNS (SMS OTP)</div>
+          <div class="arch-box orange">KBank Payment API</div>
+          <div class="arch-box">Google OAuth</div>
+          <div class="arch-box">Vercel (Deploy)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>tRPC Router Map</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Router</th><th>Auth Level</th><th>Responsibility</th><th>Key Procedures</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>user</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>Profile & QR code management</td>
+            <td>getProfile, generateQRCode, refreshQRCode</td>
+          </tr>
+          <tr>
+            <td>booking</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>Full booking lifecycle</td>
+            <td>create, validateBooking, createFullBookingSession, cleanupExpired</td>
+          </tr>
+          <tr>
+            <td>driver</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>Driver round & check-in ops</td>
+            <td>driverSelectRound, scanQRCode, startRound, completeRound</td>
+          </tr>
+          <tr>
+            <td>round</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>Seat availability & scheduling</td>
+            <td>getAvailableSeats, reserveSeats, releaseSeats</td>
+          </tr>
+          <tr>
+            <td>route</td>
+            <td><span class="status status-green">public</span></td>
+            <td>Route & stop discovery</td>
+            <td>getAll, search, getPickupPoints, getDropoffPoints</td>
+          </tr>
+          <tr>
+            <td>payment</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>Payment creation & status</td>
+            <td>create, getByBooking, getQrCode</td>
+          </tr>
+          <tr>
+            <td>phone</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>OTP verification</td>
+            <td>sendOTP, verifyOTP, getStatus</td>
+          </tr>
+          <tr>
+            <td>pricing</td>
+            <td><span class="status status-blue">protected</span></td>
+            <td>Dynamic pricing lookup</td>
+            <td>getByRoute, getPriceForPair</td>
+          </tr>
+          <tr>
+            <td>admin</td>
+            <td><span class="status status-red">admin only</span></td>
+            <td>Full platform management</td>
+            <td>routes.*, rounds.*, users.*, whitelist.*, getDashboardStats</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================== DATA FLOW =============================== -->
+  <section id="dataflow">
+    <h2>Data Flow Architecture</h2>
+
+    <h3>Booking & Payment Flow</h3>
+    <div class="dflow">
+      <div class="dflow-row">
+        <div class="dflow-node cyan">Passenger Browser</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node">tRPC: booking.create</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node">Seat Reservation (round.reserveSeats)</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node green">DB: bookings + seatAssignments</div>
+      </div>
+      <div style="padding-left:160px; color:var(--muted); font-size:22px;">↓</div>
+      <div class="dflow-row">
+        <div class="dflow-node cyan">Passenger pays QR</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">payment.getQrCode</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">tRPC: payment.create</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node orange">KBank API</div>
+      </div>
+      <div style="padding-left:160px; color:var(--muted); font-size:22px;">↓</div>
+      <div class="dflow-row">
+        <div class="dflow-node green">DB: payment status = paid</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">Webhook handler</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node orange">KBank Webhook POST</div>
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>Driver Check-in Flow</h3>
+    <div class="dflow">
+      <div class="dflow-row">
+        <div class="dflow-node purple">Driver scans QR</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node">tRPC: driver.scanQRCode</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node">Validate: booking confirmed + time window</div>
+      </div>
+      <div style="padding-left:160px; color:var(--muted); font-size:22px;">↓</div>
+      <div class="dflow-row">
+        <div class="dflow-node green">passengerCheckIns record</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">Write GPS + timestamp</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">checkin_status = checked_in</div>
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>Authentication Flow</h3>
+    <div class="dflow">
+      <div class="dflow-row">
+        <div class="dflow-node cyan">User clicks Login</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node purple">LINE / Google / Email</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node">Supabase Auth Callback</div>
+      </div>
+      <div style="padding-left:160px; color:var(--muted); font-size:22px;">↓</div>
+      <div class="dflow-row">
+        <div class="dflow-node green">DB: users upsert</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">api/create-user</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">Detect role → redirect</div>
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>SMS OTP Flow</h3>
+    <div class="dflow">
+      <div class="dflow-row">
+        <div class="dflow-node cyan">User enters phone</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node">tRPC: phone.sendOTP</div>
+        <div class="dflow-arrow">→</div>
+        <div class="dflow-node orange">AWS SNS → SMS</div>
+      </div>
+      <div style="padding-left:160px; color:var(--muted); font-size:22px;">↓</div>
+      <div class="dflow-row">
+        <div class="dflow-node green">phoneVerifications: verified = true</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node">tRPC: phone.verifyOTP</div>
+        <div class="dflow-arrow">←</div>
+        <div class="dflow-node cyan">User enters OTP</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== C4 DIAGRAM =============================== -->
+  <section id="c4diagram">
+    <h2>C4 Diagram</h2>
+    <p>C4 model describes the system at three levels of zoom: System Context (L1), Container (L2), and Component (L3).</p>
+
+    <!-- L1 -->
+    <h3>Level 1 — System Context</h3>
+    <p>Who uses the system and what external systems does it depend on?</p>
+    <div class="c4-diagram">
+      <div style="text-align:center; margin-bottom:16px;">
+        <span style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">External Users</span>
+      </div>
+      <div class="c4-row">
+        <div class="c4-box person">
+          <div class="c4-icon">🧑‍💼</div>
+          <div class="c4-name">Passenger</div>
+          <div class="c4-desc">Books shuttle trips, pays, and receives QR boarding pass</div>
+        </div>
+        <div class="c4-box person">
+          <div class="c4-icon">🚌</div>
+          <div class="c4-name">Driver</div>
+          <div class="c4-desc">Accepts rounds, scans QR codes, tracks route progress</div>
+        </div>
+        <div class="c4-box person">
+          <div class="c4-icon">⚙️</div>
+          <div class="c4-name">Admin</div>
+          <div class="c4-desc">Manages routes, rounds, pricing, and users</div>
+        </div>
+      </div>
+
+      <div class="c4-arrow-row">
+        <div class="c4-arrow">↕</div>
+        <div class="c4-arrow-label">HTTPS — Browser / LINE App</div>
+      </div>
+
+      <div class="c4-boundary sys">
+        <div class="c4-boundary-label">Loops Daily v2 Platform</div>
+        <div class="c4-row">
+          <div class="c4-box highlight">
+            <div class="c4-icon">🚀</div>
+            <div class="c4-name">Loops Daily v2</div>
+            <div class="c4-tech">Next.js 15 · tRPC · Drizzle</div>
+            <div class="c4-desc">Transportation booking, driver ops, admin management</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="c4-arrow-row">
+        <div class="c4-arrow">↕</div>
+        <div class="c4-arrow-label">External APIs & SDKs</div>
+      </div>
+
+      <div style="text-align:center; margin-bottom:12px;">
+        <span style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">External Systems</span>
+      </div>
+      <div class="c4-row">
+        <div class="c4-box external">
+          <div class="c4-icon">🟢</div>
+          <div class="c4-name">Supabase</div>
+          <div class="c4-desc">Auth + PostgreSQL managed database</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">💬</div>
+          <div class="c4-name">LINE Platform</div>
+          <div class="c4-desc">LINE Login + LIFF in-app SDK</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">🏦</div>
+          <div class="c4-name">KBank</div>
+          <div class="c4-desc">PromptPay QR payment + webhook</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">☁️</div>
+          <div class="c4-name">AWS SNS</div>
+          <div class="c4-desc">SMS OTP delivery</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">🔵</div>
+          <div class="c4-name">Google OAuth</div>
+          <div class="c4-desc">Google social login via Supabase</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L2 -->
+    <h3>Level 2 — Container Diagram</h3>
+    <p>What deployable units make up the system and how do they communicate?</p>
+    <div class="c4-diagram">
+      <div class="c4-row" style="margin-bottom:4px;">
+        <div class="c4-box person"><div class="c4-icon">🧑‍💼</div><div class="c4-name">Passenger</div></div>
+        <div class="c4-box person"><div class="c4-icon">🚌</div><div class="c4-name">Driver</div></div>
+        <div class="c4-box person"><div class="c4-icon">⚙️</div><div class="c4-name">Admin</div></div>
+      </div>
+      <div class="c4-arrow-row"><div class="c4-arrow">↕</div><div class="c4-arrow-label">HTTPS browser / LINE LIFF webview</div></div>
+
+      <div class="c4-boundary sys">
+        <div class="c4-boundary-label">Loops Daily v2 — Vercel Deployment</div>
+        <div class="c4-row">
+          <div class="c4-box container">
+            <div class="c4-icon">🖥️</div>
+            <div class="c4-name">Next.js Web App</div>
+            <div class="c4-tech">React 19 · App Router · Turbopack</div>
+            <div class="c4-desc">Server + client components, role-based pages, Tailwind UI</div>
+          </div>
+          <div class="c4-box container">
+            <div class="c4-icon">⚡</div>
+            <div class="c4-name">tRPC API</div>
+            <div class="c4-tech">tRPC 11 · Zod · SuperJSON</div>
+            <div class="c4-desc">Type-safe RPC procedures for all business operations</div>
+          </div>
+          <div class="c4-box container">
+            <div class="c4-icon">🔀</div>
+            <div class="c4-name">Edge Middleware</div>
+            <div class="c4-tech">Next.js middleware.ts</div>
+            <div class="c4-desc">Route guards, role redirects, auth cookie validation</div>
+          </div>
+          <div class="c4-box container">
+            <div class="c4-icon">🪝</div>
+            <div class="c4-name">API Routes</div>
+            <div class="c4-tech">Next.js Route Handlers</div>
+            <div class="c4-desc">KBank webhook, LIFF login, user creation, cleanup cron</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="c4-arrow-row">
+        <div class="c4-arrow">↕</div><div class="c4-arrow-label">Drizzle ORM · SQL</div>
+        <div style="width:40px"></div>
+        <div class="c4-arrow">↕</div><div class="c4-arrow-label">Supabase Auth SDK</div>
+        <div style="width:40px"></div>
+        <div class="c4-arrow">↕</div><div class="c4-arrow-label">REST / Webhooks</div>
+      </div>
+
+      <div class="c4-row">
+        <div class="c4-box external">
+          <div class="c4-icon">🗄️</div>
+          <div class="c4-name">PostgreSQL</div>
+          <div class="c4-tech">Supabase managed</div>
+          <div class="c4-desc">24 tables, 10 enums</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">🔐</div>
+          <div class="c4-name">Supabase Auth</div>
+          <div class="c4-desc">Session management, Google / Email OAuth</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">💬</div>
+          <div class="c4-name">LINE Platform</div>
+          <div class="c4-desc">LIFF + Login SDK</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">🏦</div>
+          <div class="c4-name">KBank API</div>
+          <div class="c4-desc">Payment QR + confirm webhook</div>
+        </div>
+        <div class="c4-box external">
+          <div class="c4-icon">📱</div>
+          <div class="c4-name">AWS SNS</div>
+          <div class="c4-desc">SMS delivery</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L3 -->
+    <h3>Level 3 — Component Diagram (tRPC API Container)</h3>
+    <p>What are the key components inside the tRPC API layer?</p>
+    <div class="c4-diagram">
+      <div class="c4-boundary sys">
+        <div class="c4-boundary-label">tRPC API Container</div>
+
+        <div style="margin-bottom:12px;">
+          <h4 style="text-align:center; margin:0 0 10px;">Middleware Stack</h4>
+          <div class="c4-row">
+            <div class="c4-box component">
+              <div class="c4-name">createTRPCContext</div>
+              <div class="c4-tech">trpc.ts</div>
+              <div class="c4-desc">Extracts Supabase session + LINE cookie; builds request context</div>
+            </div>
+            <div class="c4-box component">
+              <div class="c4-name">publicProcedure</div>
+              <div class="c4-tech">trpc.ts</div>
+              <div class="c4-desc">No auth — open to all callers</div>
+            </div>
+            <div class="c4-box component">
+              <div class="c4-name">protectedProcedure</div>
+              <div class="c4-tech">trpc.ts</div>
+              <div class="c4-desc">Enforces authenticated session; throws UNAUTHORIZED</div>
+            </div>
+            <div class="c4-box component">
+              <div class="c4-name">adminProcedure</div>
+              <div class="c4-tech">trpc.ts</div>
+              <div class="c4-desc">Requires role = admin; throws FORBIDDEN otherwise</div>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border-color:var(--border); margin:12px 0;">
+
+        <div style="margin-bottom:12px;">
+          <h4 style="text-align:center; margin:0 0 10px;">Domain Routers</h4>
+          <div class="c4-row">
+            <div class="c4-box component"><div class="c4-name">user router</div><div class="c4-desc">Profile, QR code generation, account setup</div></div>
+            <div class="c4-box component"><div class="c4-name">booking router</div><div class="c4-desc">Full booking lifecycle, expiry, validation</div></div>
+            <div class="c4-box component"><div class="c4-name">round router</div><div class="c4-desc">Seat availability, reservation, scheduling</div></div>
+            <div class="c4-box component"><div class="c4-name">route router</div><div class="c4-desc">Route & stop discovery, public reads</div></div>
+          </div>
+          <div class="c4-row" style="margin-top:8px;">
+            <div class="c4-box component"><div class="c4-name">driver router</div><div class="c4-desc">Round ops, QR scanning, vehicle, GPS</div></div>
+            <div class="c4-box component"><div class="c4-name">payment router</div><div class="c4-desc">KBank QR creation, payment status</div></div>
+            <div class="c4-box component"><div class="c4-name">phone router</div><div class="c4-desc">OTP send + verify via AWS SNS</div></div>
+            <div class="c4-box component"><div class="c4-name">pricing router</div><div class="c4-desc">Point-pair fare lookup</div></div>
+            <div class="c4-box component"><div class="c4-name">admin router</div><div class="c4-desc">CRUD for routes, rounds, users, whitelist</div></div>
+          </div>
+        </div>
+
+        <hr style="border-color:var(--border); margin:12px 0;">
+
+        <div>
+          <h4 style="text-align:center; margin:0 0 10px;">Shared Business Logic Services</h4>
+          <div class="c4-row">
+            <div class="c4-box component"><div class="c4-name">BookingValidator</div><div class="c4-tech">booking-validation.ts</div><div class="c4-desc">Seat, whitelist, time, conflict checks</div></div>
+            <div class="c4-box component"><div class="c4-name">BookingCleanup</div><div class="c4-tech">booking-cleanup.ts</div><div class="c4-desc">Expires pending payments + releases seats</div></div>
+            <div class="c4-box component"><div class="c4-name">QRService</div><div class="c4-tech">qr-service.ts</div><div class="c4-desc">Generates & validates QR code payloads</div></div>
+            <div class="c4-box component"><div class="c4-name">SMSService</div><div class="c4-tech">sms.ts · AWS SNS</div><div class="c4-desc">Sends OTP and notification SMS</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="c4-arrow-row"><div class="c4-arrow">↓</div><div class="c4-arrow-label">Drizzle ORM queries</div></div>
+      <div class="c4-row">
+        <div class="c4-box external"><div class="c4-icon">🗄️</div><div class="c4-name">PostgreSQL (Supabase)</div><div class="c4-desc">24-table schema</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== POLICY & SECURITY =============================== -->
+  <section id="security">
+    <h2>Policy &amp; Security</h2>
+
+    <h3>Authentication &amp; Authorization</h3>
+    <div class="sec-card">
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🔐</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Dual-provider session validation <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Every tRPC context creation checks both Supabase JWT and LINE cookie. A request is authenticated only if at least one valid session exists. LINE sessions are validated against <code>line_user_id</code> in the users table before granting access.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🛡️</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Role-based procedure guards <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail"><code>protectedProcedure</code> throws UNAUTHORIZED if no session. <code>adminProcedure</code> additionally checks <code>user.role === 'admin'</code> and throws FORBIDDEN. Drivers cannot access admin routes and vice versa.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🔀</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Edge middleware route protection <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Next.js <code>middleware.ts</code> runs on every protected route at the edge, before any page renders. Unauthenticated users are redirected to the home page. Role mismatch (e.g., passenger accessing <code>/admin/*</code>) triggers role-appropriate redirect.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">⏱️</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">QR code time-window enforcement <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Check-in via QR scan is only accepted within 30 minutes before the scheduled round departure. The <code>driver.scanQRCode</code> procedure validates this server-side — client-side state cannot bypass it.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Input Validation</h3>
+    <div class="sec-card">
+      <div class="sec-rule">
+        <div class="sec-rule-icon">✅</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Zod schema on all tRPC inputs <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Every tRPC procedure input is validated with a Zod schema before the handler runs. Invalid shape or type throws a structured BAD_REQUEST with field-level error detail. No raw unvalidated data reaches business logic.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🔢</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">OTP expiration &amp; single-use <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Phone OTP codes have a server-set <code>expires_at</code> timestamp and are invalidated after first successful verification. Re-use or expired codes return UNAUTHORIZED. OTP is never returned to the client API response.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">💺</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Server-side seat concurrency guard <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Seat reservation is performed as a database transaction. <code>available_seats</code> is decremented atomically; concurrent over-booking attempts will see the updated count and be rejected before booking is created.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Data Protection</h3>
+    <div class="sec-card">
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🔑</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Service role key — server-only <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail"><code>SUPABASE_SERVICE_ROLE_KEY</code> is never exposed to the client bundle. All privileged DB operations (user creation, admin queries) use the service role exclusively in server-side tRPC handlers and API routes.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🌐</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Environment variable segregation <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Client-exposed vars are prefixed <code>NEXT_PUBLIC_*</code>. AWS credentials, KBank keys, Supabase service role, and LINE channel secrets never use this prefix and are only available server-side.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">📍</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">GPS data minimisation <span class="policy-badge policy-recommend">RECOMMENDED</span></div>
+          <div class="sec-rule-detail">Driver GPS is logged per check-in event and as a location trail. Consider adding a data retention policy (e.g., purge <code>driverLocations</code> older than 90 days) to reduce PII exposure surface.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Payment Security</h3>
+    <div class="sec-card">
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🏦</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Webhook signature verification <span class="policy-badge policy-recommend">RECOMMENDED</span></div>
+          <div class="sec-rule-detail">The KBank webhook handler at <code>/api/webhook/kbank</code> should verify the incoming request signature (HMAC or KBank-provided token) before updating payment status. Without this, a malicious actor could forge a payment confirmation.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">⏳</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">Payment expiry &amp; seat release <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Unpaid bookings expire automatically. The cleanup job (callable via <code>/api/cleanup-expired-bookings</code> or Vercel Cron) sets <code>booking_status = expired</code>, <code>payment_status = expired</code>, and increments <code>available_seats</code> back on the round.</div>
+        </div>
+      </div>
+      <div class="sec-rule">
+        <div class="sec-rule-icon">🚫</div>
+        <div class="sec-rule-body">
+          <div class="sec-rule-title">No card data stored <span class="policy-badge policy-enforce">ENFORCED</span></div>
+          <div class="sec-rule-detail">Payment is entirely QR-based through KBank. The system stores only the QR reference URL and payment status — no card numbers, CVVs, or sensitive financial data ever touch the application database.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Access Control Matrix</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Resource / Action</th><th>Public</th><th>Passenger</th><th>Driver</th><th>Admin</th></tr></thead>
+        <tbody>
+          <tr><td>View routes & stops</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Create booking</td><td>—</td><td>✅</td><td>—</td><td>—</td></tr>
+          <tr><td>View own bookings</td><td>—</td><td>✅ (own)</td><td>—</td><td>✅ (all)</td></tr>
+          <tr><td>Cancel booking</td><td>—</td><td>✅ (own)</td><td>—</td><td>✅</td></tr>
+          <tr><td>Initiate payment</td><td>—</td><td>✅</td><td>—</td><td>—</td></tr>
+          <tr><td>Scan QR check-in</td><td>—</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>Accept / start round</td><td>—</td><td>—</td><td>✅ (assigned)</td><td>—</td></tr>
+          <tr><td>Log GPS location</td><td>—</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>Create/edit routes</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>Create/edit rounds</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>Manage pricing</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>Manage whitelist</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>View all users</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+          <tr><td>KBank webhook</td><td>✅ (KBank IP)</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============================== TASK ESTIMATION =============================== -->
+  <section id="estimation">
+    <h2>Task Estimation</h2>
+    <p>Effort sizing: <span class="effort-s">S = &lt;1 day</span> · <span class="effort-m">M = 1–3 days</span> · <span class="effort-l">L = 3–7 days</span> · <span class="effort-xl">XL = 1–2 weeks</span></p>
+
+    <h3>Passenger Features</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Effort</th><th>Key Files / Routers</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Booking cancellation by passenger</td>
+            <td><span class="effort-m">M</span></td>
+            <td>booking.ts router, bookings table</td>
+            <td>Needs refund logic + seat release</td>
+          </tr>
+          <tr>
+            <td>Push notifications (booking reminders)</td>
+            <td><span class="effort-l">L</span></td>
+            <td>sms.ts, LINE Messaging API</td>
+            <td>LINE push message or SMS via SNS</td>
+          </tr>
+          <tr>
+            <td>Multi-seat booking (group)</td>
+            <td><span class="effort-m">M</span></td>
+            <td>booking.ts, seatAssignments table</td>
+            <td>Seat count validation already exists</td>
+          </tr>
+          <tr>
+            <td>Passenger loyalty/points system</td>
+            <td><span class="effort-xl">XL</span></td>
+            <td>New table: userPoints, booking.ts</td>
+            <td>New domain; requires schema + UI + rules</td>
+          </tr>
+          <tr>
+            <td>Real-time bus tracking (passenger view)</td>
+            <td><span class="effort-l">L</span></td>
+            <td>driverLocations table, WebSocket/SSE</td>
+            <td>Data exists; needs live subscription</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Driver Features</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Effort</th><th>Key Files / Routers</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Driver earnings summary dashboard</td>
+            <td><span class="effort-m">M</span></td>
+            <td>driver.ts, rounds, bookings tables</td>
+            <td>Aggregate query on completed rounds</td>
+          </tr>
+          <tr>
+            <td>Offline QR scan (service worker)</td>
+            <td><span class="effort-l">L</span></td>
+            <td>QRScanner.tsx, service worker</td>
+            <td>Queue scans + sync when online</td>
+          </tr>
+          <tr>
+            <td>Driver shift reports (PDF export)</td>
+            <td><span class="effort-m">M</span></td>
+            <td>driverSessions, passengerCheckIns</td>
+            <td>Use jsPDF or server-side PDF gen</td>
+          </tr>
+          <tr>
+            <td>Turn-by-turn navigation integration</td>
+            <td><span class="effort-xl">XL</span></td>
+            <td>routePoints, driver UI</td>
+            <td>Google Maps/Directions API + LIFF map</td>
+          </tr>
+          <tr>
+            <td>Automatic round code entry</td>
+            <td><span class="effort-s">S</span></td>
+            <td>driver.ts: driverEnterRoundCode</td>
+            <td>Procedure already exists; UI polish only</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Admin Features</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Effort</th><th>Key Files / Routers</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Bulk round creation (recurring schedule)</td>
+            <td><span class="effort-m">M</span></td>
+            <td>admin.ts, rounds table</td>
+            <td>Date-range loop + transaction</td>
+          </tr>
+          <tr>
+            <td>Revenue analytics dashboard</td>
+            <td><span class="effort-l">L</span></td>
+            <td>admin.ts, payments, bookings</td>
+            <td>Aggregate queries + chart library</td>
+          </tr>
+          <tr>
+            <td>Driver performance reports</td>
+            <td><span class="effort-m">M</span></td>
+            <td>driverRoundAssignments, checkins</td>
+            <td>On-time rate, completion rate metrics</td>
+          </tr>
+          <tr>
+            <td>Route capacity auto-adjustment</td>
+            <td><span class="effort-l">L</span></td>
+            <td>rounds table, round.ts</td>
+            <td>Rules engine for dynamic seat limits</td>
+          </tr>
+          <tr>
+            <td>Audit log viewer</td>
+            <td><span class="effort-m">M</span></td>
+            <td>New auditLogs table + admin.ts</td>
+            <td>Hook into tRPC mutations; schema change needed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Infrastructure & Platform</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Effort</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>End-to-end test suite (Playwright)</td>
+            <td><span class="effort-xl">XL</span></td>
+            <td>Full booking flow + auth + driver flow coverage</td>
+          </tr>
+          <tr>
+            <td>Unit tests for tRPC routers</td>
+            <td><span class="effort-l">L</span></td>
+            <td>Vitest + tRPC test client for each router</td>
+          </tr>
+          <tr>
+            <td>CI/CD pipeline (GitHub Actions)</td>
+            <td><span class="effort-m">M</span></td>
+            <td>typecheck + build + db migrate on PR</td>
+          </tr>
+          <tr>
+            <td>Rate limiting on tRPC procedures</td>
+            <td><span class="effort-s">S</span></td>
+            <td>Upstash Redis rate limiter in tRPC middleware</td>
+          </tr>
+          <tr>
+            <td>i18n / Localization (TH + EN)</td>
+            <td><span class="effort-l">L</span></td>
+            <td>next-intl or similar; all string extraction</td>
+          </tr>
+          <tr>
+            <td>Monitoring & error tracking (Sentry)</td>
+            <td><span class="effort-s">S</span></td>
+            <td>@sentry/nextjs setup + source maps</td>
+          </tr>
+          <tr>
+            <td>Background job scheduler (cron cleanup)</td>
+            <td><span class="effort-m">M</span></td>
+            <td>Vercel Cron → /api/cleanup-expired-bookings already exists</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Effort Summary</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Total Story Points Estimate</h3>
+        <p style="margin-bottom:16px;">Based on the task breakdown above, rough sprint planning:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Size</th><th>Count</th><th>Days (avg)</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td><span class="effort-s">S</span></td><td>3</td><td>0.5</td><td>1.5 days</td></tr>
+              <tr><td><span class="effort-m">M</span></td><td>9</td><td>2</td><td>18 days</td></tr>
+              <tr><td><span class="effort-l">L</span></td><td>7</td><td>5</td><td>35 days</td></tr>
+              <tr><td><span class="effort-xl">XL</span></td><td>4</td><td>10</td><td>40 days</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Recommended Priority Order</h3>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-red" style="margin-right:8px;">High</span> Booking cancellation + refund</li>
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-red" style="margin-right:8px;">High</span> CI/CD pipeline + monitoring</li>
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-yellow" style="margin-right:8px;">Medium</span> Push notifications (LINE)</li>
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-yellow" style="margin-right:8px;">Medium</span> Revenue analytics dashboard</li>
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-yellow" style="margin-right:8px;">Medium</span> Bulk round creation</li>
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-green" style="margin-right:8px;">Low</span> i18n / localization</li>
+          <li style="font-size:13px; color:var(--muted);"><span class="status status-green" style="margin-right:8px;">Low</span> Turn-by-turn navigation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div style="height:80px;"></div>
+</main>
+
+<script>
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
