@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Security Incident Report — bauenliving.com</title>
+  <title>Security Incident Report v3 — bauenliving.com</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -268,21 +268,21 @@
 
 <!-- ══════════════ COVER ══════════════ -->
 <div class="cover">
-  <div class="cover-badge"><span></span> Confidential — Incident Report</div>
+  <div class="cover-badge"><span></span> Confidential — Incident Report v3 (Full Scan — Complete Findings)</div>
   <h1>Security Incident Report</h1>
-  <h2>Website Malware Infection &amp; Unauthorized Redirect — bauenliving.com</h2>
+  <h2>Multi-Vector Attack: Redirect Malware, SEO Spam &amp; Google Search Console Hijack — bauenliving.com</h2>
   <div class="cover-meta">
     <div class="cover-meta-item">
       <label>Report Date</label>
       <span>23 June 2026</span>
     </div>
     <div class="cover-meta-item">
-      <label>Incident Date</label>
-      <span>7 June 2026</span>
+      <label>First Compromise</label>
+      <span>28 May 2026 (Wave 1)</span>
     </div>
     <div class="cover-meta-item">
       <label>Severity</label>
-      <span>⚠ HIGH</span>
+      <span>⛔ CRITICAL</span>
     </div>
     <div class="cover-meta-item">
       <label>Status</label>
@@ -304,20 +304,20 @@
   <!-- ══════════════ SUMMARY STRIP ══════════════ -->
   <div class="summary-strip">
     <div class="stat-card">
-      <div class="stat-num red">16</div>
-      <div class="stat-label">Days Active</div>
+      <div class="stat-num red">26</div>
+      <div class="stat-label">Days Active (Total)</div>
     </div>
     <div class="stat-card">
       <div class="stat-num red">17</div>
       <div class="stat-label">Victims Tracked</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num orange">50+</div>
-      <div class="stat-label">Brute Force IPs</div>
+      <div class="stat-num red">3</div>
+      <div class="stat-label">Attack Vectors</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num">4</div>
-      <div class="stat-label">Malware Files</div>
+      <div class="stat-num red">28+</div>
+      <div class="stat-label">Infected / Malicious Files</div>
     </div>
   </div>
 
@@ -329,23 +329,31 @@
     </div>
 
     <div class="alert alert-critical">
-      <strong>Critical Finding</strong>
-      On <strong>7 June 2026 at approximately 01:59 AM (ICT)</strong>, an attacker successfully
-      compromised the WordPress administrator account for <strong>bauenliving.com</strong> through a
-      coordinated brute-force attack. The attacker then planted a commercial-grade malware kit called
-      <strong>"pd-inject v5"</strong> inside the <code>vt.bauenliving.com</code> subdomain, which
-      injected a fake "Notice" popup into every page visitor, redirecting them to fraudulent
-      advertising and scam websites. The malware operated undetected for <strong>16 days</strong>
-      (7 – 23 June 2026).
+      <strong>v3 — Full Scan Complete — Three Simultaneous Attack Vectors Confirmed</strong>
+      A comprehensive server-wide forensic scan has revealed this is not a single malware infection but a <strong>three-vector attack</strong> carried out by the same threat actor across two waves.
+      <br><br>
+      <strong>Vector 1 — Popup Redirect (pd-inject v5):</strong> Malware auto-appended to every PHP response on <code>vt.bauenliving.com</code>, displaying a fake "⚠️ Notice" popup that redirects visitors to scam sites via the chain <em>scarleterror.com → corevibe-network.com → telkucton.org</em>.
+      <br><br>
+      <strong>Vector 2 — SEO Spam Cloaking:</strong> A 448KB PHP cloaking script at <code>vt.bauenliving.com/video/index.php</code> generates Thai gambling/slot machine pages (PG Slot affiliate spam), detects Googlebot to show different content to crawlers versus users, and serves a spam sitemap listing hundreds of gambling keyword URLs under <code>bauenliving.com</code>.
+      <br><br>
+      <strong>Vector 3 — Google Search Console Hijack:</strong> The attacker added <code>bauenliving.com</code> to their own Google Search Console account using <strong>5 different verification HTML files</strong> found across the server. This gave them the ability to submit spam sitemaps directly to Google, request spam page indexing, and potentially remove legitimate pages.
+      <br><br>
+      <strong>Wave 1 (28 May 2026, 20:04 ICT):</strong> Initial breach via distributed brute force. Malware injected into <code>privacy-tools.php</code>, Fusion Builder, and 12+ Really Simple SSL HTML files. SEO spam directories and Google verification files were also planted at this time.
+      <br><br>
+      <strong>Wave 2 (7 June 2026, 01:59 ICT):</strong> Attacker returned 10 days later, deployed the persistent pd-inject v5 popup kit on <code>vt.bauenliving.com</code>. Ran undetected for 16 days.
+      <br><br>
+      Total active period: <strong>26 days</strong> (28 May – 23 June 2026).
     </div>
 
     <div class="card">
       <h4>Business Impact</h4>
       <ul style="padding-left:18px; margin-top:8px;">
         <li style="margin-bottom:6px;"><strong>Brand damage:</strong> Visitors to bauenliving.com and vt.bauenliving.com were shown a fake system alert popup and redirected to adult/scam content, directly damaging trust in the BAUEN by SCG brand.</li>
-        <li style="margin-bottom:6px;"><strong>SEO / Google ranking risk:</strong> Google Safe Browsing flags sites with malicious redirects; this can result in search demotion or a "Dangerous Site" warning in Chrome.</li>
-        <li style="margin-bottom:6px;"><strong>Data privacy:</strong> The malware tracked visitor IP addresses and referrer URLs in an attacker-controlled log file, constituting unauthorized personal data collection.</li>
-        <li><strong>Duration of exposure:</strong> 17 confirmed victim sessions were logged by the attacker between 7 June and 22 June 2026.</li>
+        <li style="margin-bottom:6px;"><strong>Google deindexing risk (CRITICAL):</strong> The attacker planted gambling spam pages under bauenliving.com's domain and submitted them to Google via a hijacked Search Console account. If Google has already indexed these spam pages, bauenliving.com may receive a <strong>Google Manual Action penalty</strong>, which can remove the entire site from search results. This is potentially the most damaging long-term consequence of the attack.</li>
+        <li style="margin-bottom:6px;"><strong>Google Search Console hijacked:</strong> The attacker verified ownership of bauenliving.com in their own GSC account using 5 verification HTML files. They may have already submitted spam sitemaps and requested indexing of gambling pages. <strong>Unauthorized GSC access must be revoked immediately.</strong></li>
+        <li style="margin-bottom:6px;"><strong>Data privacy (PDPA):</strong> The malware tracked visitor IP addresses and referrer URLs in an attacker-controlled log file, constituting unauthorized personal data collection. 17 confirmed victims — legal counsel should assess PDPA notification obligations.</li>
+        <li style="margin-bottom:6px;"><strong>Duration of exposure:</strong> 26 days total (28 May – 23 June 2026). Popup redirect active 16 days. SEO spam pages potentially crawled by Google during this entire period.</li>
+        <li><strong>Possible data exfiltration:</strong> A 290MB zip archive of all WordPress plugins (<code>plugins.zip</code>) was created on the server 2 days after the initial breach. This may represent an attacker packaging plugin source code for further exploitation.</li>
       </ul>
     </div>
   </div>
@@ -360,45 +368,66 @@
       <div class="timeline">
 
         <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-time">6 June 2026 — All Day</div>
-          <div class="tl-title">Reconnaissance &amp; Brute Force Attack Begins</div>
-          <div class="tl-body">Attackers launched a distributed brute-force campaign against <code>wp-login.php</code> using 50+ different IP addresses, rotating user-agents to evade detection. Log entries confirmed by <code>access_ssl_log.processed.4.gz</code>.</div>
+          <div class="tl-dot orange"></div>
+          <div class="tl-time">28 May 2026 — From 00:00 ICT</div>
+          <div class="tl-title">⚡ WAVE 1 — Brute Force &amp; First Compromise</div>
+          <div class="tl-body">Distributed brute-force campaign launched against <code>wp-login.php</code> using 50+ rotating IP addresses. HTTP 200 responses confirmed successful logins before 08:04 AM ICT. Key attacker IPs: <strong>78.142.18.172</strong>, <strong>195.33.205.242</strong>, <strong>162.43.73.204</strong> and others.</div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot red"></div>
+          <div class="tl-time">28 May 2026 — 20:04 ICT (13:04 UTC)</div>
+          <div class="tl-title" style="color:#dc2626;">🦠 Wave 1 Malware Planted — Main Domain (httpdocs)</div>
+          <div class="tl-body">Attacker injected malware into the main WordPress site. Confirmed by WooCommerce fatal-error log: <strong>"CRITICAL syntax error, unexpected identifier 'https'"</strong> in <code>fusion-builder/inc/class-fusion-form-submit.php</code> at line 212, logged at exactly 13:04 UTC. Attacker also infected: <code>wp-admin/includes/privacy-tools.php</code> (hash: <code>61872c95ecab2734eb00752c520004aa</code>) and injected <code>&lt;script src="/ads.js"&gt;</code> into 12+ HTML files inside the <strong>Really Simple SSL plugin</strong> (backups left as <code>.pdbak</code> files).</div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot red"></div>
+          <div class="tl-time">28 May 2026 — Same Session</div>
+          <div class="tl-title" style="color:#dc2626;">🎰 SEO Spam &amp; Google Search Console Hijack Planted</div>
+          <div class="tl-body">During the same Wave 1 session, the attacker deployed a secondary attack: a <strong>448KB cloaking script</strong> generating Thai gambling pages (PG Slot affiliate spam) and planted <strong>5 Google Search Console HTML verification files</strong> across the server. By verifying bauenliving.com in their own GSC account, the attacker gained the ability to submit spam sitemaps directly to Google — potentially causing bauenliving.com's domain to serve hundreds of indexed gambling pages.</div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot orange"></div>
+          <div class="tl-time">30 May 2026</div>
+          <div class="tl-title">Suspicious Plugin Archive Created (plugins.zip — 290MB)</div>
+          <div class="tl-body">A 290MB zip archive of all WordPress plugins was created on the server 2 days after the Wave 1 breach. Timestamp and location (<code>httpdocs/wp-content/plugins.zip</code>) suggest possible attacker-created data exfiltration package. Contains 33,731 files.</div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot orange"></div>
+          <div class="tl-time">28 May – 6 June 2026</div>
+          <div class="tl-title">Partial Cleanup — Wave 1 Partially Detected</div>
+          <div class="tl-body">Some files from Wave 1 were cleaned (possibly by Imunify360 or manually). <code>privacy-tools.php</code> and <code>fusion-form-submit.php</code> were restored to clean versions. However, <strong>12 Really Simple SSL plugin HTML files were left infected</strong>, the SEO spam video directory was moved to <code>.trash/</code> (but a copy remains active at <code>vt.bauenliving.com/video/</code>), and all Google verification files were left on the server.</div>
         </div>
 
         <div class="tl-item">
           <div class="tl-dot red"></div>
           <div class="tl-time">7 June 2026 — 01:59 AM ICT</div>
-          <div class="tl-title" style="color:#dc2626;">⚡ WordPress Admin Account Compromised</div>
-          <div class="tl-body">HTTP 200 (success) responses confirmed multiple successful logins to <code>wp-login.php</code> from IPs <strong>78.142.18.172</strong>, <strong>198.38.94.14</strong>, <strong>64.31.25.250</strong> and others. The attacker gained full WordPress administrator access.</div>
-        </div>
-
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-time">7 June 2026 — 01:59:15 AM ICT</div>
-          <div class="tl-title" style="color:#dc2626;">🦠 Malware Planted — pd-inject v5</div>
-          <div class="tl-body">Attacker wrote four malicious files to <code>vt.bauenliving.com/</code>. File system timestamps confirm exact deployment time of 01:59:15. The <code>.htaccess</code> and <code>.user.ini</code> were modified to auto-append <code>ads.php</code> to every PHP response. <code>ads.js</code> and <code>ads.php</code> were created as the injection payload.</div>
+          <div class="tl-title" style="color:#dc2626;">⚡ WAVE 2 — Re-Compromise &amp; Persistent Backdoor</div>
+          <div class="tl-body">Attacker returned with another brute-force. HTTP 200 on <code>wp-login.php</code> from IPs <strong>78.142.18.172</strong>, <strong>198.38.94.14</strong>, <strong>64.31.25.250</strong>. At 01:59:15 AM the attacker deployed the persistent <strong>pd-inject v5</strong> kit on <code>vt.bauenliving.com</code> — modifying <code>.htaccess</code> and <code>.user.ini</code> to auto-append <code>ads.php</code> to every page, and creating <code>ads.js</code> with the popup redirect payload.</div>
         </div>
 
         <div class="tl-item">
           <div class="tl-dot red"></div>
           <div class="tl-time">7 June 2026 — 08:02 AM ICT</div>
-          <div class="tl-title">First Victim Redirected</div>
-          <div class="tl-body">Attacker's own tracking log (<code>.ads.log</code>) recorded the first victim session: IP <strong>184.22.234.204</strong> visiting <code>https://vt.bauenliving.com/</code>.</div>
+          <div class="tl-title">First Victim Redirected (Wave 2)</div>
+          <div class="tl-body">Attacker's tracking log (<code>.ads.log</code>) recorded the first victim: IP <strong>184.22.234.204</strong> visiting <code>https://vt.bauenliving.com/</code>. The fake "⚠️ Notice" popup was shown and victim was redirected to <code>scarleterror.com → corevibe-network.com → telkucton.org</code>.</div>
         </div>
 
         <div class="tl-item">
           <div class="tl-dot orange"></div>
           <div class="tl-time">7 June – 22 June 2026</div>
-          <div class="tl-title">Malware Active — Ongoing Victim Exposure</div>
-          <div class="tl-body">17 unique victim sessions were recorded in the attacker's log. All victims were Thai IP addresses, primarily on mobile networks (AIS, DTAC, True). Malware continued to serve the fake popup and redirect to <code>scarleterror.com → corevibe-network.com → telkucton.org</code>.</div>
+          <div class="tl-title">Wave 2 Active — 17 Victims Tracked</div>
+          <div class="tl-body">17 unique Thai IP addresses were recorded in the attacker's log. All visitors to <code>vt.bauenliving.com</code> were shown the redirect popup. Malware remained active across both domains for the full 16-day period.</div>
         </div>
 
         <div class="tl-item">
           <div class="tl-dot green"></div>
           <div class="tl-time">23 June 2026 — Today</div>
-          <div class="tl-title">Incident Discovered &amp; Investigation Started</div>
-          <div class="tl-body">Malware discovered by team. Forensic investigation completed. Report generated. Awaiting business approval for cleanup and remediation actions.</div>
+          <div class="tl-title">Incident Discovered &amp; Full Investigation Completed</div>
+          <div class="tl-body">Full server-wide scan complete. Three attack vectors confirmed: popup redirect (pd-inject v5), SEO spam cloaking (Thai gambling affiliate pages), and Google Search Console hijack (5 verification files). 28+ malicious files identified across both domains. Report updated to v3. Awaiting business approval for 19-step cleanup.</div>
         </div>
 
       </div>
@@ -413,11 +442,13 @@
     </div>
 
     <div class="alert alert-critical">
-      <strong>Root Cause — Confirmed</strong>
-      The attack was made possible by a <strong>successful brute-force of the WordPress login page</strong>.
-      The <code>limit-login-attempts-reloaded</code> plugin was installed but failed to block the attack
-      because the attacker used <strong>50+ different IP addresses</strong> (distributed botnet), rotating
-      through them to stay under any single-IP lockout threshold.
+      <strong>Root Cause — Confirmed (Two Waves)</strong>
+      Both attacks were made possible by a <strong>successful distributed brute-force of the WordPress login page</strong>.
+      The <code>limit-login-attempts-reloaded</code> plugin was installed but failed to block either attack
+      because the attacker used <strong>50+ different IP addresses per wave</strong> (distributed botnet), rotating
+      through them to stay under any single-IP lockout threshold. After Wave 1 was partially cleaned, the attacker
+      simply repeated the same brute-force method 10 days later (Wave 2), confirming the root password was
+      either not changed or was re-cracked.
     </div>
 
     <div class="card" style="margin-top:16px;">
@@ -505,56 +536,220 @@
     </div>
 
     <div class="card">
-      <h4>Infected Files Inventory</h4>
+      <h4>Infected / Malicious Files Inventory — Complete (All Vectors)</h4>
       <table>
         <thead>
-          <tr><th>File Path</th><th>Type</th><th>Date Planted</th><th>Status</th></tr>
+          <tr><th>File Path</th><th>Wave</th><th>Type</th><th>Date Planted</th><th>Status</th></tr>
         </thead>
         <tbody>
+          <tr style="background:#fff5f5;">
+            <td colspan="5" style="font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:#991b1b; padding:8px 14px;">VECTOR 1 — Popup Redirect (pd-inject v5)</td>
+          </tr>
           <tr>
             <td><code>vt.bauenliving.com/.htaccess</code></td>
+            <td><span class="tag tag-red">Wave 2</span></td>
             <td><span class="tag tag-red">Config Hijack</span></td>
             <td>7 Jun 2026 01:59</td>
-            <td><span class="tag tag-red">Active</span></td>
+            <td><span class="tag tag-red">Still Active</span></td>
           </tr>
           <tr>
             <td><code>vt.bauenliving.com/.user.ini</code></td>
+            <td><span class="tag tag-red">Wave 2</span></td>
             <td><span class="tag tag-red">Config Hijack</span></td>
             <td>7 Jun 2026 01:59</td>
-            <td><span class="tag tag-red">Active</span></td>
+            <td><span class="tag tag-red">Still Active</span></td>
           </tr>
           <tr>
             <td><code>vt.bauenliving.com/ads.php</code></td>
+            <td><span class="tag tag-red">Wave 2</span></td>
             <td><span class="tag tag-red">Malware Injector</span></td>
             <td>7 Jun 2026 01:59</td>
-            <td><span class="tag tag-red">Active</span></td>
+            <td><span class="tag tag-red">Still Active</span></td>
           </tr>
           <tr>
             <td><code>vt.bauenliving.com/ads.js</code></td>
+            <td><span class="tag tag-red">Wave 2</span></td>
             <td><span class="tag tag-red">Redirect Payload</span></td>
             <td>7 Jun 2026 01:59</td>
-            <td><span class="tag tag-red">Active</span></td>
+            <td><span class="tag tag-red">Still Active</span></td>
           </tr>
           <tr>
             <td><code>vt.bauenliving.com/.ads.log</code></td>
-            <td><span class="tag tag-orange">Attacker Log</span></td>
+            <td><span class="tag tag-red">Wave 2</span></td>
+            <td><span class="tag tag-orange">Attacker PII Log</span></td>
             <td>7 Jun 2026</td>
-            <td><span class="tag tag-orange">Contains PII</span></td>
+            <td><span class="tag tag-orange">Preserve for Legal</span></td>
+          </tr>
+          <tr>
+            <td><code>httpdocs/wp-admin/includes/privacy-tools.php</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">Core File Injection</span></td>
+            <td>28 May 2026 ~20:04</td>
+            <td><span class="tag tag-blue">Cleaned</span></td>
+          </tr>
+          <tr>
+            <td><code>httpdocs/wp-content/plugins/fusion-builder/inc/class-fusion-form-submit.php</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">Plugin File Injection</span></td>
+            <td>28 May 2026 ~20:04</td>
+            <td><span class="tag tag-blue">Cleaned</span></td>
+          </tr>
+          <tr>
+            <td><code>httpdocs/wp-content/plugins/really-simple-ssl/mailer/templates/email.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">HTML Script Injection</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
+          </tr>
+          <tr>
+            <td><code>httpdocs/wp-content/plugins/really-simple-ssl/mailer/templates/email-unbranded.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">HTML Script Injection</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
+          </tr>
+          <tr>
+            <td><code>httpdocs/wp-content/plugins/really-simple-ssl/testssl/*/ssl-test-page.html</code> <em>(10 files)</em></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">HTML Script Injection</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
           </tr>
           <tr>
             <td><code>httpdocs/wp-content/updraft/index.html</code></td>
+            <td><span class="tag tag-red">Wave 2</span></td>
             <td><span class="tag tag-orange">Injected HTML</span></td>
             <td>7 Jun 2026</td>
-            <td><span class="tag tag-orange">Secondary</span></td>
+            <td><span class="tag tag-orange">Active (minor)</span></td>
+          </tr>
+
+          <tr style="background:#fffbeb;">
+            <td colspan="5" style="font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:#9a3412; padding:8px 14px;">VECTOR 2 — SEO Spam Cloaking (Gambling Affiliate Pages)</td>
           </tr>
           <tr>
-            <td><code>.trash/</code> folder (30+ files)</td>
-            <td><span class="tag tag-gray">Infected Backup</span></td>
-            <td>7 Jun 2026</td>
-            <td><span class="tag tag-gray">Inactive</span></td>
+            <td><code>vt.bauenliving.com/video/index.php</code> (448KB)</td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">SEO Spam / Cloaking</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
+          </tr>
+          <tr>
+            <td><code>vt.bauenliving.com/video/param.txt</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">Attacker Config</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
+          </tr>
+          <tr>
+            <td><code>vt.bauenliving.com/video/thaikeyword.txt</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">Spam Keyword List</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/videoxxx/index.php</code> (442KB)</td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">SEO Spam (moved)</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/videoxxx/29a.xml</code> (3.1MB)</td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">Spam Sitemap</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+          <tr>
+            <td><code>httpdocs/wp-content/plugins.zip</code> (290MB)</td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-orange">Possible Exfiltration</span></td>
+            <td>30 May 2026</td>
+            <td><span class="tag tag-orange">Investigate / Delete</span></td>
+          </tr>
+
+          <tr style="background:#f0fdf4;">
+            <td colspan="5" style="font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:#166534; padding:8px 14px;">VECTOR 3 — Google Search Console Hijack (5 Verification Files)</td>
+          </tr>
+          <tr>
+            <td><code>vt.bauenliving.com/video/googlec6c682899ba0e5d5.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-red">GSC Hijack</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-red">Still Active</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/google2ae8266c82fee136.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">GSC Hijack (moved)</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/news/google8260564f1346b7e3.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">GSC Hijack (moved)</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/videoxxx/google8915cf1af8ed6b68.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">GSC Hijack (moved)</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/videoxxx/google89b0d51596b29b69.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">GSC Hijack (moved)</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+          <tr>
+            <td><code>.trash/pages/googlec6c682899ba0e5d5.html</code></td>
+            <td><span class="tag tag-orange">Wave 1</span></td>
+            <td><span class="tag tag-gray">GSC Hijack (moved)</span></td>
+            <td>28 May 2026</td>
+            <td><span class="tag tag-gray">Contained in .trash</span></td>
+          </tr>
+
+          <tr style="background:#f1f5f9;">
+            <td colspan="5" style="font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:#475569; padding:8px 14px;">CLEAN — Confirmed by Full Server Scan</td>
+          </tr>
+          <tr>
+            <td>WordPress Database (wp_options, wp_posts, all tables)</td>
+            <td>—</td>
+            <td><span class="tag tag-blue">Clean</span></td>
+            <td>—</td>
+            <td><span class="tag tag-blue">No malicious content</span></td>
+          </tr>
+          <tr>
+            <td>WordPress Core, Active Theme (Avada), WP Core Plugins</td>
+            <td>—</td>
+            <td><span class="tag tag-blue">Clean</span></td>
+            <td>—</td>
+            <td><span class="tag tag-blue">No infection found</span></td>
+          </tr>
+          <tr>
+            <td>SSH authorized_keys / Server Crontab</td>
+            <td>—</td>
+            <td><span class="tag tag-blue">Clean</span></td>
+            <td>—</td>
+            <td><span class="tag tag-blue">No backdoor</span></td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="alert alert-warning" style="margin-top:16px;">
+      <strong>New Finding — Wave 1 Fingerprint</strong>
+      The MD5 hash <code>61872c95ecab2734eb00752c520004aa</code> found in <code>privacy-tools.php</code> on 28 May 2026 is
+      <strong>identical</strong> to the hash embedded in the Wave 2 malware URL:
+      <code>https://scarleterror.com/61/87/2c/61872c95ecab2734eb00752c520004aa.js</code>.
+      This proves both waves were executed by the <strong>same attacker / same malware kit</strong>.
+      The hash was used as a unique site identifier in the attacker's infrastructure.
     </div>
 
     <div class="card" style="margin-top:16px;">
@@ -587,28 +782,73 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
     </div>
 
     <div class="card" style="margin-top:16px;">
+      <h4>SEO Spam Cloaking Attack — Technical Detail</h4>
+      <p style="margin-bottom:12px; font-size:14px; color:#374151;">The <code>video/index.php</code> script uses the following cloaking logic to evade detection while serving spam pages to Google:</p>
+      <div class="code-block"><span class="comment">// Step 1: Detect Googlebot — show spam content to crawler, 404 to humans without keyword</span>
+<span class="hi-yellow">$paramFile</span> = __DIR__ . '/param.txt';   <span class="comment">// reads "website" as valid GET key</span>
+<span class="hi-yellow">$validKeys</span> = explode(' ', file_get_contents(<span class="hi-yellow">$paramFile</span>));
+
+<span class="comment">// Step 2: If ?website= key missing → show 404 (real user sees nothing)</span>
+if (<span class="hi-yellow">$key</span> === null) { echo '404'; die; }
+
+<span class="comment">// Step 3: With ?website=pg+slot → generate full Thai gambling page</span>
+<span class="hi-yellow">$brand</span> = $_GET[<span class="hi-yellow">$key</span>];   <span class="comment">// e.g. "pg slot"</span>
+<span class="hi-red">$signUp</span> = 'https://kutt.arrehlah.com/alexsagapung';  <span class="comment">// gambling affiliate link</span>
+<span class="hi-yellow">$title</span> = "ทำไม PG Slot ถึงเป็นค่ายเกมสล็อตอันดับ 1 ในปี 2025?";
+
+<span class="comment">// Step 4: ?website=sitemap.xml → returns spam XML sitemap to Google</span>
+<span class="comment">// Sitemap contains URLs: bauenliving.com/video/pg+slot, bauenliving.com/video/k929 ...</span>
+if (<span class="hi-yellow">$brand</span> == 'sitemap.xml') {
+  header('Content-Type: application/xml');
+  <span class="comment">// Returns 29a.xml — 3.1MB sitemap of hundreds of gambling keyword URLs</span>
+}</div>
+      <p style="margin-top:12px; font-size:13.5px; color:#374151;"><strong>Impact:</strong> If the attacker submitted this sitemap URL to Google Search Console, Google may have indexed gambling pages with bauenliving.com's domain and authority, making the domain appear as a gambling spam site and triggering a Google manual penalty.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h4>Google Search Console Hijack — How It Works</h4>
+      <p style="font-size:14px; color:#374151; margin-bottom:12px;">The attacker placed 5 unique Google-format HTML verification files on the server. When Google visits <code>bauenliving.com/googleXXXXXX.html</code>, it returns the verification token, confirming to Google that the file requester owns the domain. This grants the attacker:</p>
+      <ul style="padding-left:18px; font-size:13.5px; color:#374151;">
+        <li style="margin-bottom:5px;">Full read access to all GSC data for bauenliving.com (search traffic, crawl errors, indexed pages)</li>
+        <li style="margin-bottom:5px;">Ability to submit sitemaps — attacker can direct Google to index the <code>29a.xml</code> gambling spam sitemap</li>
+        <li style="margin-bottom:5px;">Ability to request removal of legitimate pages from Google index</li>
+        <li><strong>The verification files must be deleted AND the attacker's GSC account must be manually removed from the property owners list at search.google.com/search-console</strong></li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
       <h4>Attacker Infrastructure (External Domains)</h4>
       <table>
-        <thead><tr><th>Domain</th><th>Role</th><th>Risk</th></tr></thead>
+        <thead><tr><th>Domain</th><th>Role / Vector</th><th>Risk</th></tr></thead>
         <tbody>
           <tr>
             <td><code>scarleterror.com</code></td>
-            <td>Malware C2 — serves the redirect payload JS file</td>
+            <td><strong>Vector 1</strong> — Malware C2, serves the redirect payload JS</td>
             <td><span class="severity sev-critical">Critical</span></td>
           </tr>
           <tr>
             <td><code>corevibe-network.com</code></td>
-            <td>Ad network intermediary / traffic broker</td>
+            <td><strong>Vector 1</strong> — Ad network intermediary / traffic broker</td>
             <td><span class="severity sev-high">High</span></td>
           </tr>
           <tr>
             <td><code>telkucton.org</code></td>
-            <td>Final scam/affiliate destination</td>
+            <td><strong>Vector 1</strong> — Final scam/affiliate destination</td>
             <td><span class="severity sev-high">High</span></td>
           </tr>
           <tr>
             <td><code>topuprd.org</code></td>
-            <td>Secondary link injected into page footer</td>
+            <td><strong>Vector 1</strong> — Secondary link injected into page footer</td>
+            <td><span class="severity sev-medium">Medium</span></td>
+          </tr>
+          <tr>
+            <td><code>kutt.arrehlah.com</code></td>
+            <td><strong>Vector 2</strong> — Gambling affiliate redirect (PG Slot SEO spam destination)</td>
+            <td><span class="severity sev-high">High</span></td>
+          </tr>
+          <tr>
+            <td><code>i.postimg.cc</code> / <code>i.ibb.co</code></td>
+            <td><strong>Vector 2</strong> — External image hosting for gambling spam page assets</td>
             <td><span class="severity sev-medium">Medium</span></td>
           </tr>
         </tbody>
@@ -649,12 +889,22 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
           <tr>
             <td>vt.bauenliving.com (subdomain)</td>
             <td><span class="tag tag-red">YES — Active</span></td>
-            <td>Malware fully deployed, still running</td>
+            <td>Popup redirect malware + SEO spam cloaking script — both still running</td>
           </tr>
           <tr>
-            <td>bauenliving.com (main WP site)</td>
-            <td><span class="tag tag-orange">Partial</span></td>
-            <td>WordPress admin account breached; WP files, database, and theme are clean; 1 backup file injected</td>
+            <td>bauenliving.com (main WP site — httpdocs)</td>
+            <td><span class="tag tag-red">YES — Active (Wave 1)</span></td>
+            <td>12 Really Simple SSL plugin HTML files still contain active <code>&lt;script src="/ads.js"&gt;</code> injection. Admin account breached in both waves. WP core, database, and theme are clean.</td>
+          </tr>
+          <tr>
+            <td>Google Search Console (bauenliving.com property)</td>
+            <td><span class="tag tag-red">YES — Hijacked</span></td>
+            <td>5 attacker GSC verification files found. Attacker has/had full owner-level access to GSC property. Must revoke immediately at <code>search.google.com/search-console → Settings → Users and permissions</code>.</td>
+          </tr>
+          <tr>
+            <td>Google Search Index</td>
+            <td><span class="tag tag-orange">Possibly Damaged</span></td>
+            <td>Gambling spam sitemap (<code>29a.xml</code>) may have been submitted to Google. Spam pages may be indexed under bauenliving.com. Check GSC Coverage report and submit spam URL removal requests after cleanup.</td>
           </tr>
           <tr>
             <td>WordPress Database</td>
@@ -669,12 +919,17 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
           <tr>
             <td>Server Credentials / SSH Keys</td>
             <td><span class="tag tag-orange">Unknown</span></td>
-            <td>Cannot rule out; recommend password rotation for all accounts</td>
+            <td>Cannot rule out; recommend password rotation for all accounts. SSH authorized_keys confirmed empty (no backdoor key planted).</td>
           </tr>
           <tr>
             <td>Visitor PII (IP + referrer)</td>
             <td><span class="tag tag-red">YES — Breached</span></td>
             <td>17 victim records in attacker log; potential PDPA notification required</td>
+          </tr>
+          <tr>
+            <td>WordPress Plugin Source Code</td>
+            <td><span class="tag tag-orange">Possibly Exfiltrated</span></td>
+            <td>290MB <code>plugins.zip</code> created May 30 (2 days post-breach). Attacker may have packaged plugin code to find further vulnerabilities or sell to third parties.</td>
           </tr>
           <tr>
             <td>Customer / Business Data</td>
@@ -699,7 +954,15 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
         <div class="rec-priority"><span class="badge badge-p1">P1 Immediate</span></div>
         <div class="rec-content">
           <h5>Remove all malware files from vt.bauenliving.com</h5>
-          <p>Delete <code>ads.php</code>, <code>ads.js</code>, <code>.ads.log</code>. Remove injected blocks from <code>.htaccess</code> and <code>.user.ini</code>. Clean injected script tag from <code>updraft/index.html</code>. Delete the entire <code>.trash/</code> folder. <em>This stops the active redirect immediately.</em></p>
+          <p>Delete <code>ads.php</code>, <code>ads.js</code>, <code>.ads.log</code>. Remove injected blocks from <code>.htaccess</code> and <code>.user.ini</code>. Clean injected script tag from <code>updraft/index.html</code>. Delete the <code>video/</code> directory entirely (<code>index.php</code>, <code>param.txt</code>, <code>thaikeyword.txt</code>, Google verification HTML). Delete the entire <code>.trash/</code> folder. <em>This stops the active redirect and SEO spam serving immediately.</em></p>
+        </div>
+      </div>
+
+      <div class="rec-item">
+        <div class="rec-priority"><span class="badge badge-p1">P1 Immediate</span></div>
+        <div class="rec-content">
+          <h5>Revoke Attacker's Google Search Console Access</h5>
+          <p>Log in to <strong>search.google.com/search-console</strong> → Select the bauenliving.com property → <strong>Settings → Users and permissions</strong>. Remove any unrecognized users/owners. The 5 verification files on the server mean the attacker claimed owner-level access. After revoking access, check the <strong>Sitemaps report</strong> for any spam sitemaps submitted and remove them. Also check the <strong>Coverage report</strong> for any gambling pages that may have been indexed. <em>Failure to revoke GSC access means the attacker retains the ability to manipulate your Google search presence even after the server files are cleaned.</em></p>
         </div>
       </div>
 
@@ -716,6 +979,22 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
         <div class="rec-content">
           <h5>Enable Two-Factor Authentication (2FA) on WordPress</h5>
           <p>Install the "WP 2FA" plugin. Require 2FA for all administrator and editor accounts. A brute-forced password alone will not be sufficient to gain access with 2FA enabled.</p>
+        </div>
+      </div>
+
+      <div class="rec-item">
+        <div class="rec-priority"><span class="badge badge-p2">P2 This Week</span></div>
+        <div class="rec-content">
+          <h5>Request Google Spam URL Removal &amp; Monitor for Manual Action</h5>
+          <p>After deleting the spam files, use <strong>Google Search Console → Removals</strong> to submit the spam sitemap URL for removal. Check the <strong>Manual Actions</strong> report for any penalties already issued. Search Google for <code>site:bauenliving.com casino</code> or <code>site:bauenliving.com slot</code> to discover any already-indexed gambling pages. If a manual action has been issued, submit a reconsideration request after cleanup is complete.</p>
+        </div>
+      </div>
+
+      <div class="rec-item">
+        <div class="rec-priority"><span class="badge badge-p2">P2 This Week</span></div>
+        <div class="rec-content">
+          <h5>Delete plugins.zip (Possible Data Exfiltration Archive)</h5>
+          <p>The 290MB file at <code>httpdocs/wp-content/plugins.zip</code>, created 2 days after the initial breach, should be deleted. Verify with the development team whether this file was intentionally created by a legitimate admin — if not, treat it as attacker-created and delete it. A public-facing 290MB zip of plugin source code is also a security risk in itself.</p>
         </div>
       </div>
 
@@ -754,8 +1033,8 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
       <div class="rec-item">
         <div class="rec-priority"><span class="badge badge-p3">P3 This Month</span></div>
         <div class="rec-content">
-          <h5>Submit Site for Google Safe Browsing Review</h5>
-          <p>After cleanup, submit <code>bauenliving.com</code> and <code>vt.bauenliving.com</code> to <a href="https://search.google.com/search-console/security-issues" target="_blank">Google Search Console → Security Issues</a> to remove any malware flags and restore search ranking.</p>
+          <h5>Submit Site for Google Safe Browsing &amp; Security Review</h5>
+          <p>After cleanup: (1) Check <strong>Google Safe Browsing</strong> status at <code>transparencyreport.google.com/safe-browsing/search</code>. (2) In GSC, go to <strong>Security Issues</strong> and request a review to clear any malware flag. (3) Verify the <strong>Manual Actions</strong> section is clear; if not, file a reconsideration request. (4) Confirm all spam URLs are deindexed by checking <code>site:bauenliving.com</code> in Google Search within 2–4 weeks of cleanup.</p>
         </div>
       </div>
 
@@ -784,14 +1063,30 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
       <table>
         <thead><tr><th>#</th><th>Action</th><th>Risk of Action</th><th>Reversible?</th></tr></thead>
         <tbody>
+          <tr style="background:#fff5f5;"><td colspan="4" style="font-size:12px; font-weight:700; color:#991b1b; text-transform:uppercase; padding:8px 14px;">Phase 1 — Stop Active Attacks (Vector 1 &amp; 2)</td></tr>
           <tr><td>1</td><td>Remove <code>PD-INJ</code> block from <code>vt.bauenliving.com/.htaccess</code></td><td>Low — restores to original</td><td>Yes (backup exists as <code>.htaccess.pdbak</code>)</td></tr>
           <tr><td>2</td><td>Delete <code>vt.bauenliving.com/.user.ini</code></td><td>Low</td><td>Yes</td></tr>
           <tr><td>3</td><td>Delete <code>vt.bauenliving.com/ads.php</code></td><td>None</td><td>No (malware file)</td></tr>
           <tr><td>4</td><td>Delete <code>vt.bauenliving.com/ads.js</code></td><td>None</td><td>No (malware file)</td></tr>
-          <tr><td>5</td><td>Delete <code>vt.bauenliving.com/.ads.log</code></td><td>Low — removes PII</td><td>No (preserve a copy first if needed for legal)</td></tr>
-          <tr><td>6</td><td>Restore <code>updraft/index.html</code> from <code>.pdbak</code></td><td>Low</td><td>Yes</td></tr>
-          <tr><td>7</td><td>Delete <code>.trash/</code> folder contents</td><td>Low — infected backups</td><td>No</td></tr>
-          <tr><td>8</td><td>Reset all WordPress admin passwords</td><td>Medium — users must re-login</td><td>Yes</td></tr>
+          <tr><td>5</td><td>Preserve a copy of <code>vt.bauenliving.com/.ads.log</code>, then delete the original</td><td>Low — preserves legal evidence</td><td>Partial (keep offline copy)</td></tr>
+          <tr><td>6</td><td>Delete <code>vt.bauenliving.com/video/</code> entire directory (SEO spam cloaking script, param.txt, thaikeyword.txt, google verification file)</td><td>None — attacker-created directory</td><td>No</td></tr>
+          <tr><td>7</td><td>Restore 12 infected <code>really-simple-ssl</code> HTML files from their <code>.pdbak</code> backups, then delete the <code>.pdbak</code> files</td><td>Low</td><td>Yes (pdbak files are the originals)</td></tr>
+          <tr><td>8</td><td>Restore <code>updraft/index.html</code> from <code>.pdbak</code></td><td>Low</td><td>Yes</td></tr>
+          <tr><td>9</td><td>Delete entire <code>.trash/</code> folder (infected backups, spam files, GSC verification files)</td><td>Low — infected backups</td><td>No</td></tr>
+          <tr><td>10</td><td>Investigate and delete <code>httpdocs/wp-content/plugins.zip</code> (290MB, confirm not created by legitimate admin)</td><td>Medium — verify before deleting</td><td>Yes (recreate from installed plugins)</td></tr>
+
+          <tr style="background:#fffbeb;"><td colspan="4" style="font-size:12px; font-weight:700; color:#9a3412; text-transform:uppercase; padding:8px 14px;">Phase 2 — Revoke Attacker's Google Access (Vector 3)</td></tr>
+          <tr><td>11</td><td>Log into Google Search Console → bauenliving.com property → Settings → Users and permissions → Remove all unrecognized owner/user accounts</td><td>None — removes unauthorized access</td><td>No (revoking attacker access)</td></tr>
+          <tr><td>12</td><td>In GSC → Sitemaps: remove any spam sitemaps submitted by the attacker</td><td>None</td><td>Yes (can resubmit correct sitemap)</td></tr>
+          <tr><td>13</td><td>In GSC → Removals: submit spam gambling URLs for removal from Google index</td><td>None</td><td>Yes (temporary removal, permanent once deindexed)</td></tr>
+          <tr><td>14</td><td>Submit Security Issues review in GSC to clear any malware flag</td><td>None</td><td>N/A</td></tr>
+
+          <tr style="background:#f0fdf4;"><td colspan="4" style="font-size:12px; font-weight:700; color:#166534; text-transform:uppercase; padding:8px 14px;">Phase 3 — Harden &amp; Prevent Recurrence</td></tr>
+          <tr><td>15</td><td>Reset all WordPress admin passwords (7 accounts)</td><td>Medium — users must re-login</td><td>Yes</td></tr>
+          <tr><td>16</td><td>Install and enforce 2FA on all WP admin accounts</td><td>Low</td><td>Yes</td></tr>
+          <tr><td>17</td><td>Restrict <code>wp-login.php</code> to office/VPN IPs via <code>.htaccess</code> or Cloudflare WAF</td><td>Medium — remote admins must use VPN</td><td>Yes</td></tr>
+          <tr><td>18</td><td>Rotate Plesk/SSH system user credentials</td><td>Low</td><td>Yes</td></tr>
+          <tr><td>19</td><td>Enable Wordfence or Imunify360 with file change alerting</td><td>Low — monitoring only</td><td>Yes</td></tr>
         </tbody>
       </table>
     </div>
@@ -859,7 +1154,8 @@ echo <span class="hi-red">'&lt;script src="/ads.js"&gt;&lt;/script&gt;'</span>;<
 <!-- ══════════════ FOOTER ══════════════ -->
 <div class="footer">
   <strong>CONFIDENTIAL — FOR INTERNAL USE ONLY</strong><br>
-  Security Incident Report · bauenliving.com · Prepared 23 June 2026 · Neumerlin / BAUEN by SCG IT Security
+  Security Incident Report v3 · bauenliving.com · Prepared 23 June 2026 · Neumerlin / BAUEN by SCG IT Security<br>
+  v3 Update: Full server-wide scan complete — 3 attack vectors identified: popup redirect (pd-inject v5), SEO spam cloaking (Thai gambling affiliate pages), Google Search Console hijack (5 verification files). 28+ malicious files found. 19-step cleanup plan. Awaiting business approval.
 </div>
 
 </body>
