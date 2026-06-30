@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loops Backoffice — Feature Migration Map (Old → New)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #1e293b; }
+
+    header {
+      background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+      color: white; padding: 2.5rem 2rem 2rem;
+    }
+    header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.4rem; }
+    header p  { opacity: 0.85; font-size: 0.95rem; }
+
+    .legend {
+      display: flex; gap: 1.5rem; flex-wrap: wrap;
+      background: white; padding: 1rem 2rem; border-bottom: 1px solid #e2e8f0;
+      font-size: 0.82rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .dot-new    { background: #22c55e; }
+    .dot-moved  { background: #f59e0b; }
+    .dot-merged { background: #8b5cf6; }
+    .dot-same   { background: #64748b; }
+    .dot-gone   { background: #ef4444; }
+
+    main { max-width: 1340px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+    h2 {
+      font-size: 1.15rem; font-weight: 700; color: #1e40af; margin: 2.5rem 0 0.75rem;
+      border-left: 4px solid #1e40af; padding-left: 0.75rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* OLD PAGE CARD */
+    .old-page-card {
+      background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 2rem; overflow: hidden;
+    }
+    .old-page-header {
+      background: #1e3a8a; color: white;
+      padding: 0.8rem 1.25rem;
+      display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+    }
+    .old-page-header .page-title { font-weight: 700; font-size: 0.95rem; }
+    .old-page-header .page-route { font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.78rem; opacity: 0.8; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #e8edf8; }
+    thead th { padding: 0.6rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 700;
+               text-transform: uppercase; letter-spacing: 0.05em; color: #374151; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafbff; }
+    td { padding: 0.75rem 1rem; font-size: 0.865rem; vertical-align: top; }
+
+    .fn-name { font-weight: 600; color: #1e293b; }
+    .fn-desc  { color: #64748b; font-size: 0.8rem; margin-top: 0.2rem; }
+
+    .badge {
+      display: inline-block; padding: 0.18rem 0.55rem; border-radius: 999px;
+      font-size: 0.7rem; font-weight: 700; white-space: nowrap;
+    }
+    .badge-new    { background: #dcfce7; color: #15803d; }
+    .badge-moved  { background: #fef9c3; color: #a16207; }
+    .badge-merged { background: #ede9fe; color: #6d28d9; }
+    .badge-same   { background: #f1f5f9; color: #475569; }
+    .badge-gone   { background: #fee2e2; color: #b91c1c; }
+
+    code { background: #f1f5f9; color: #7c3aed; padding: 0.1rem 0.35rem;
+           border-radius: 4px; font-size: 0.78rem; font-family: "SFMono-Regular", Consolas, monospace; }
+
+    .new-route { font-weight: 600; color: #1e40af; }
+    .new-route-sub { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; }
+
+    .arrow-col { color: #94a3b8; font-size: 1rem; text-align: center; width: 32px; }
+
+    /* stack diff */
+    .stack-diff {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.75rem;
+    }
+    .stack-box { background: white; border-radius: 10px; padding: 1.25rem 1.5rem;
+                 box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .stack-box h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.75rem; color: #374151; }
+    .stack-box ul { list-style: none; }
+    .stack-box li { padding: 0.3rem 0; font-size: 0.85rem; display: flex; gap: 0.5rem; }
+    .stack-box li::before { content: "•"; color: #94a3b8; }
+
+    /* new-only section */
+    .new-only-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;
+      margin-top: 0.75rem;
+    }
+    .new-only-card {
+      background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      padding: 1rem 1.25rem; border-left: 4px solid #22c55e;
+    }
+    .new-only-card .card-route { font-family: "SFMono-Regular", Consolas, monospace;
+                                  font-size: 0.8rem; color: #7c3aed; font-weight: 600; }
+    .new-only-card .card-title { font-weight: 700; margin: 0.3rem 0 0.2rem; font-size: 0.9rem; }
+    .new-only-card .card-desc  { font-size: 0.8rem; color: #64748b; }
+
+    .note { background: #fefce8; border: 1px solid #fde047; border-radius: 8px;
+            padding: 0.8rem 1rem; font-size: 0.83rem; color: #713f12; margin-top: 1.25rem; }
+    .note ul { margin-top: 0.4rem; padding-left: 1.2rem; }
+    .note li { margin-top: 0.25rem; }
+
+    @media (max-width: 768px) {
+      .stack-diff { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Loops Backoffice — Feature Migration Map</h1>
+  <p>
+    Old: <strong>loops-backoffice-ui</strong> (React SPA, Bootstrap, plain JS) &nbsp;→&nbsp;
+    New: <strong>loops-backoffice</strong> (Next.js 16 App Router, TypeScript, tRPC, Tailwind)
+  </p>
+</header>
+
+<div class="legend">
+  <span class="legend-item"><span class="dot dot-new"></span> New — didn't exist before</span>
+  <span class="legend-item"><span class="dot dot-moved"></span> Moved / renamed — same function, new location</span>
+  <span class="legend-item"><span class="dot dot-merged"></span> Merged — came from multiple old pages</span>
+  <span class="legend-item"><span class="dot dot-same"></span> Equivalent — rebuilt, same purpose</span>
+  <span class="legend-item"><span class="dot dot-gone"></span> Removed / redirected</span>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 1 ══ -->
+<h2>📋 Old Page: Booking Data &amp; Passenger Checklist</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking-data-and-passenger-checklist</code> — one page with <strong>3 separate functions</strong> stacked vertically</p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">BookingDataAndPassengerChecklist.jsx</span>
+    <span class="page-route">3 functions on 1 page: DownloadBookingData + UploadBookingDataAndGetPassengerChecklist + UpdateVehicleDataToBooking</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Get Booking Data</div>
+          <div class="fn-desc"><code>DownloadBookingData</code> — select event + booking status → download XLSX</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings</div><div class="new-route-sub">bookings/page.tsx — "Data Management"</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Same filter (event + status) → XLSX download, now a standalone page with cleaner UI</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② Upload Booking Data &amp; Get Passenger Checklist</div>
+          <div class="fn-desc"><code>UploadBookingDataAndGetPassengerChecklist</code> — upload XLSX → preview passenger list → download checklist PDF/XLSX</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/checklists</div><div class="new-route-sub">bookings/checklists/page.tsx</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Upload → preview → download checklist, now its own dedicated page</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">③ Upload Vehicle Data &amp; Update</div>
+          <div class="fn-desc"><code>UpdateVehicleDataToBooking</code> — upload XLSX to assign vehicles to bookings in bulk</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/vehicle-update</div><div class="new-route-sub">bookings/vehicle-update/page.tsx</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Vehicle XLSX bulk-upload merged with "Find Vehicle by Phone" into one Vehicle Update page</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 2 ══ -->
+<h2>🚌 Old Page: Vehicle Data of Booking</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking/vehicle</code> — find &amp; update vehicle by vehicle number</p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">VehicleDataOfBooking.jsx</span>
+    <span class="page-route">1 main function: FindVehicleDataByVehicleNumber</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Find Vehicle by Vehicle Number</div>
+          <div class="fn-desc"><code>FindVehicleDataByVehicleNumber</code> — search by vehicle number → view assigned bookings → update vehicle data on orders</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/vehicle-update</div><div class="new-route-sub">bookings/vehicle-update/page.tsx</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Merged with "Find by Phone Number" (VehicleDataByPhoneNumber.jsx) and "Upload Vehicle XLSX" into a single Vehicle Update page with tabs/modes</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 3 ══ -->
+<h2>📅 Old Page: Round Data</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking/routeround</code></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">EventRouteRoundData.jsx</span>
+    <span class="page-route">1 function: EventRouteRoundDetail</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① View Route &amp; Round Data</div>
+          <div class="fn-desc"><code>EventRouteRoundDetail</code> — select event → see routes and rounds with seat/price info</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/events/routes</div><div class="new-route-sub">events/routes/page.tsx</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Route &amp; round management — now supports editing routes and rounds, not just viewing</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 4 ══ -->
+<h2>💬 Old Page: Send LINE Message</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/send-line-message</code> — <strong>3 sequential functions</strong> in a workflow</p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">SendLineMessage.jsx</span>
+    <span class="page-route">3 functions: GetEventCustomerIdList + GetUserLineIdFromExcel + SendingLineMessageForm</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Get Customer LINE ID List from Event</div>
+          <div class="fn-desc"><code>GetEventCustomerIdList</code> — filter by event + booking status → build recipient list</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/messaging</div><div class="new-route-sub">messaging/page.tsx — recipient filter step</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Still step 1 of the compose flow; now supports filtering by event, status, or segment</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② Import LINE IDs from Excel</div>
+          <div class="fn-desc"><code>GetUserLineIdFromExcel</code> — upload XLSX of LINE user IDs to supplement or replace the auto-fetched list</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/messaging</div><div class="new-route-sub">messaging/page.tsx — XLSX import option</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Manual XLSX import still available as an alternative targeting method in the send flow</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">③ Compose &amp; Send LINE Message</div>
+          <div class="fn-desc"><code>SendingLineMessageForm</code> — write message content → confirm → broadcast to recipient list</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/messaging</div><div class="new-route-sub">messaging/page.tsx — compose &amp; send step</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Same broadcast workflow; campaign saved to DB and visible in Message History after sending</td>
+      </tr>
+      <tr>
+        <td><div class="fn-name">— (no history existed)</div></td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/messaging/history</div><div class="new-route-sub">messaging/history/page.tsx + /history/[id]</div></td>
+        <td><span class="badge badge-new">New</span></td>
+        <td>Full campaign history list + per-campaign detail (recipient count, status, timestamp, partial-failure breakdown)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 5 ══ -->
+<h2>🗓 Old Page: Get &amp; Update Event by ID</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/get-and-update-event-by-id</code> — <strong>2 sequential functions</strong></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">GetAndUpdateEventByID.jsx</span>
+    <span class="page-route">2 functions: SearchEventData + EventDataForm</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Search Event by ID</div>
+          <div class="fn-desc"><code>SearchEventData</code> — type an event ID → fetch event record</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/events</div><div class="new-route-sub">events/page.tsx — search/filter bar</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Now a table with inline search/filter — no need to type an ID; browse or search by name</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② Edit Event Data</div>
+          <div class="fn-desc"><code>EventDataForm</code> — edit event name, dates, status fields → save</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/events</div><div class="new-route-sub">events/page.tsx — inline edit / drawer</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Edit event inline from the Event Management table</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 6 ══ -->
+<h2>✏️ Old Page: Update Booking Customer</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking/customer/update</code> — <strong>3 functions</strong> (request form + result table + log history)</p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">BookingCustomerUpdate.jsx</span>
+    <span class="page-route">mode=UPDATE: EditBookingCustomerRequest + UpdateBookingCustomerResponseTable + EditBookingLogTable</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Submit Bulk Update Request (XLSX)</div>
+          <div class="fn-desc"><code>EditBookingCustomerRequest mode=UPDATE</code> — upload XLSX of booking changes → submit</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-update</div><div class="new-route-sub">bookings/bulk-update/page.tsx</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Upload XLSX → process bulk update; now shows validation errors before submitting</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② View Update Response / Result Table</div>
+          <div class="fn-desc"><code>UpdateBookingCustomerResponseTable</code> — shows success/fail rows after processing</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-update</div><div class="new-route-sub">inline result on same page</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Result table still shows after processing on the same page</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">③ View Edit Log History (paginated)</div>
+          <div class="fn-desc"><code>EditBookingLogTable mode=UPDATE</code> — paginated history of past bulk-update jobs</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-update/history</div><div class="new-route-sub">bulk-update/history/page.tsx + /history/[id]</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Moved to a dedicated History page with individual run detail view at <code>/history/[id]</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 7 ══ -->
+<h2>❌ Old Page: Cancel Booking Customer</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking/customer/cancel</code> — <strong>2 functions</strong></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">BookingCustomerCancel.jsx</span>
+    <span class="page-route">mode=CANCEL: EditBookingCustomerRequest + EditBookingLogTable</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Submit Bulk Cancel Request (XLSX)</div>
+          <div class="fn-desc"><code>EditBookingCustomerRequest mode=CANCEL</code> — upload XLSX of bookings to cancel → submit</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-cancel</div><div class="new-route-sub">bookings/bulk-cancel/page.tsx</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Same XLSX cancel flow, now with pre-submit validation</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② View Cancel Log History (paginated)</div>
+          <div class="fn-desc"><code>EditBookingLogTable mode=CANCEL</code> — history of past bulk-cancel jobs</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-cancel/history</div><div class="new-route-sub">bulk-cancel/history/page.tsx + /history/[id]</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Dedicated History page with per-run detail at <code>/history/[id]</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 8 ══ -->
+<h2>📞 Old Page: Update Phone Number of Booking Customer</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking/customer/phone</code> — <strong>3 functions</strong></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">BookingCustomerPhoneNumber.jsx</span>
+    <span class="page-route">mode=PHONE_NUMBER: EditBookingCustomerRequest + UpdateBookingCustomerResponseTable + EditBookingLogTable</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Submit Phone Number Update (XLSX)</div>
+          <div class="fn-desc"><code>EditBookingCustomerRequest mode=PHONE_NUMBER</code> — upload XLSX of phone corrections → submit</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-update</div><div class="new-route-sub">bookings/bulk-update/page.tsx</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Phone number update is now one of the update modes within Bulk Update (not a separate page)</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② View Phone Update Response Table</div>
+          <div class="fn-desc"><code>UpdateBookingCustomerResponseTable mode=PHONE_NUMBER</code></div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-update</div><div class="new-route-sub">inline result</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Result still shown inline after processing</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">③ View Phone Update Log History</div>
+          <div class="fn-desc"><code>EditBookingLogTable mode=PHONE_NUMBER</code></div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/bulk-update/history</div><div class="new-route-sub">filtered by type</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Bulk-update history covers all update modes including phone number changes</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 9 ══ -->
+<h2>🚗 Old Page: Vehicle Data by Phone Number</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/booking/customer/vehicle/phonenumber</code></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">VehicleDataByPhoneNumber.jsx</span>
+    <span class="page-route">1 function: FindVehicleDataByPhoneNumber</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function (component)</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Find Vehicle by Phone Number</div>
+          <div class="fn-desc"><code>FindVehicleDataByPhoneNumber</code> — enter customer phone → see which vehicle/bus they are assigned to</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/bookings/vehicle-update</div><div class="new-route-sub">bookings/vehicle-update/page.tsx</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Merged with "Find by Vehicle Number" and "Upload Vehicle XLSX" into the unified Vehicle Update page</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 10 ══ -->
+<h2>🔗 Old Page: Link Tracker (Redirect Stats)</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/redirect-link-stats</code></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">RedirectLinkStats.jsx</span>
+    <span class="page-route">2 functions: Add short link + View click stats table</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Create Short / Redirect Link</div>
+          <div class="fn-desc">Enter a URL → generate a short link hosted at <code>loops-redirectstats-ui.vercel.app</code></div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/marketing</div><div class="new-route-sub">GA4 section — link tracking via GA4 events</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Short-link creation no longer in backoffice; link tracking is now done via GA4 custom events in the booking app</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="fn-name">② View Click Stats Table + Export Excel</div>
+          <div class="fn-desc">See original URL, short URL, total clicks, unique clicks; export click history XLSX</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/marketing</div><div class="new-route-sub">GA4 user journey section</div></td>
+        <td><span class="badge badge-merged">Merged</span></td>
+        <td>Click/engagement data now shown as a GA4 user journey funnel: <em>event_card_click → booking_start → … → payment_success</em></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ OLD PAGE 11 ══ -->
+<h2>📥 Old Page: Create Event by XLSX</h2>
+<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem">Old route: <code>/event/create</code></p>
+
+<div class="old-page-card">
+  <div class="old-page-header">
+    <span class="page-title">Event.jsx</span>
+    <span class="page-route">1 function: Import event from XLSX template</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:28%">Old Function</th><th style="width:4%"></th>
+      <th style="width:28%">New Location</th><th style="width:12%">Status</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="fn-name">① Create Event from XLSX</div>
+          <div class="fn-desc">Upload XLSX template → system creates event with routes and rounds</div>
+        </td>
+        <td class="arrow-col">→</td>
+        <td><div class="new-route">/events/import</div><div class="new-route-sub">events/import/page.tsx</div></td>
+        <td><span class="badge badge-moved">Moved</span></td>
+        <td>Same XLSX import; now shows column-level validation errors before committing</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ NEW ONLY ══ -->
+<h2>🟢 Entirely New Features (No Equivalent in Old System)</h2>
+
+<div class="new-only-grid">
+  <div class="new-only-card">
+    <div class="card-route">/marketing</div>
+    <div class="card-title">Marketing Dashboard</div>
+    <div class="card-desc">Booking overview stats, LINE campaign performance, top booking segments, GA4 user journey analytics — all filtered by event</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/bookings/requests</div>
+    <div class="card-title">Booking Requests Queue</div>
+    <div class="card-desc">Unified queue for Draft bookings + Pre-booking requests. Admin approves/rejects; on approval LINE deep-link sent to customer automatically</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/bookings/multi-export</div>
+    <div class="card-title">Multi Event Export</div>
+    <div class="card-desc">Export booking data across multiple events in a single XLSX file</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/bookings/payment-recovery</div>
+    <div class="card-title">Payment Recovery</div>
+    <div class="card-desc">Manual payment recovery tool for failed KBank QR payments; full audit trail at <code>/history</code> and <code>/history/[id]</code></div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/bookings/daily-reconciliation/history</div>
+    <div class="card-title">Daily Reconciliation</div>
+    <div class="card-desc">Automated KBank daily reconciliation: mismatch detection, run history list, and per-run detail with mismatch breakdown</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/payments</div>
+    <div class="card-title">Payments Overview</div>
+    <div class="card-desc">KBank QR payment dashboard with summary stats and status breakdown</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/payments/transactions</div>
+    <div class="card-title">Transaction List &amp; Detail</div>
+    <div class="card-desc">Browse all payment transactions with filters; per-transaction detail with callback timeline at <code>/transactions/[id]</code></div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/payments/alerts</div>
+    <div class="card-title">Payment Alerts</div>
+    <div class="card-desc">Reconciliation mismatch alerts and alert recipient management</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/settings/feature-flags</div>
+    <div class="card-title">Feature Flags</div>
+    <div class="card-desc">Toggle features on/off at runtime without re-deploying the application</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/otp-logs</div>
+    <div class="card-title">OTP Audit Logs</div>
+    <div class="card-desc">View all OTP events (sent / verified / expired) per phone number or booking for auditing and support</div>
+  </div>
+  <div class="new-only-card">
+    <div class="card-route">/events/bookings</div>
+    <div class="card-title">Event Bookings View</div>
+    <div class="card-desc">Browse all bookings scoped to a specific event — filterable by route, round, and status</div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Summary:</strong>
+  Old system had <strong>11 pages</strong> (some with up to 3 stacked functions per page), all under a single <code>/event/…</code> namespace, with no type safety, no payment features, and no analytics.
+  <br><br>
+  New system has <strong>30+ pages / routes</strong> across 6 sections.
+  Every multi-function old page has been <strong>split into dedicated pages</strong> with their own URL, so admins can bookmark and navigate directly.
+  Major new capabilities added:
+  <ul>
+    <li>Full Payments module — KBank QR overview, transaction detail, alerts</li>
+    <li>Marketing Dashboard — LINE campaign analytics + GA4 user journey funnel</li>
+    <li>Daily KBank reconciliation with automated mismatch detection</li>
+    <li>Unified Booking Requests queue (Draft + Pre-booking approval flow)</li>
+    <li>Payment recovery with full audit trail</li>
+    <li>Feature flags for runtime control</li>
+    <li>OTP audit logs for customer support</li>
+    <li>Per-campaign LINE message history with detail view</li>
+  </ul>
+</div>
+
+</main>
+</body>
+</html>
