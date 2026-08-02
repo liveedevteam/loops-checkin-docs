@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แผนเพาะกล้าฟักทอง 1,000 ต้น</title>
+  <style>
+    :root {
+      --ink: #213023;
+      --muted: #637066;
+      --green: #2f6f43;
+      --green-soft: #eaf4ec;
+      --amber: #b66a14;
+      --amber-soft: #fff4df;
+      --red: #a83b32;
+      --red-soft: #fff0ee;
+      --line: #dfe7e0;
+      --paper: #ffffff;
+      --canvas: #f4f7f4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 32px auto;
+      background: var(--paper);
+      padding: 42px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(34, 65, 40, 0.08);
+    }
+
+    header {
+      border-bottom: 3px solid var(--green);
+      padding-bottom: 22px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 5px 10px;
+      background: var(--green-soft);
+      color: var(--green);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      font-size: 34px;
+      line-height: 1.25;
+      color: var(--green);
+    }
+
+    h2 {
+      margin-top: 34px;
+      margin-bottom: 14px;
+      color: var(--green);
+      font-size: 23px;
+      border-left: 5px solid var(--green);
+      padding-left: 12px;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 18px;
+    }
+
+    p { margin: 8px 0 12px; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .hero-grid,
+    .cards,
+    .budget-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-grid {
+      grid-template-columns: repeat(4, 1fr);
+      margin: 24px 0 8px;
+    }
+
+    .metric {
+      background: var(--green-soft);
+      border: 1px solid #d6ead9;
+      border-radius: 14px;
+      padding: 17px;
+    }
+
+    .metric .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--green);
+      line-height: 1.1;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 7px;
+    }
+
+    .callout {
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 16px 0;
+      border-left: 5px solid;
+    }
+
+    .callout.green {
+      background: var(--green-soft);
+      border-color: var(--green);
+    }
+
+    .callout.amber {
+      background: var(--amber-soft);
+      border-color: var(--amber);
+    }
+
+    .callout.red {
+      background: var(--red-soft);
+      border-color: var(--red);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 22px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 11px 12px;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--green-soft);
+      color: var(--green);
+      text-align: left;
+    }
+
+    td.num, th.num { text-align: right; white-space: nowrap; }
+
+    ul, ol {
+      margin: 8px 0 14px;
+      padding-left: 24px;
+    }
+
+    li { margin: 5px 0; }
+
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .card h3 { margin-top: 0; color: var(--green); }
+
+    .timeline {
+      counter-reset: step;
+      margin-top: 16px;
+    }
+
+    .step {
+      position: relative;
+      padding: 0 0 20px 54px;
+      min-height: 48px;
+    }
+
+    .step:before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--green);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .step:after {
+      content: "";
+      position: absolute;
+      left: 17px;
+      top: 38px;
+      width: 2px;
+      height: calc(100% - 34px);
+      background: var(--line);
+    }
+
+    .step:last-child:after { display: none; }
+
+    .step strong { color: var(--green); }
+
+    .checklist {
+      columns: 2;
+      column-gap: 28px;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist li {
+      break-inside: avoid;
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 10px;
+    }
+
+    .checklist li:before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      color: var(--green);
+      font-size: 20px;
+    }
+
+    .budget-grid {
+      grid-template-columns: 1fr 1fr;
+      margin-top: 16px;
+    }
+
+    .budget-box {
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .budget-box.recommended {
+      border-color: var(--green);
+      background: #fbfefb;
+    }
+
+    .budget-total {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--green);
+      margin-top: 8px;
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    footer {
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .page { margin: 0; border-radius: 0; padding: 24px 18px; }
+      .hero-grid { grid-template-columns: repeat(2, 1fr); }
+      .cards, .budget-grid { grid-template-columns: 1fr; }
+      .checklist { columns: 1; }
+      h1 { font-size: 28px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page {
+        max-width: none;
+        margin: 0;
+        padding: 20mm 16mm;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .card, .budget-box, .metric, table { break-inside: avoid; }
+      h2 { break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <span class="eyebrow">แผนเพาะกล้าเชิงพาณิชย์</span>
+      <h1>แผนเพาะกล้าฟักทอง 1,000 ต้น</h1>
+      <p class="subtitle">
+        สรุปเฉพาะขั้นตอนเพาะกล้า ตั้งแต่การเตรียมเมล็ด ถาด วัสดุเพาะ การดูแล ไปจนถึงต้นทุนโดยประมาณจาก Shopee
+      </p>
+
+      <section class="hero-grid">
+        <div class="metric">
+          <div class="value">1,250–1,300</div>
+          <div class="label">เมล็ดที่ควรเตรียม</div>
+        </div>
+        <div class="metric">
+          <div class="value">18 ถาด</div>
+          <div class="label">ถาด 72 หลุม รวม 1,296 หลุม</div>
+        </div>
+        <div class="metric">
+          <div class="value">10–13 วัน</div>
+          <div class="label">อายุเป้าหมายก่อนย้ายปลูก</div>
+        </div>
+        <div class="metric">
+          <div class="value">1–2 ใบจริง</div>
+          <div class="label">ระยะเหมาะสมสำหรับลงแปลง</div>
+        </div>
+      </section>
+    </header>
+
+    <section>
+      <h2>1. เป้าหมายและจำนวนที่ควรเพาะ</h2>
+      <p>
+        เป้าหมายคือให้ได้กล้าสมบูรณ์อย่างน้อย 1,000 ต้น แต่ต้องเผื่อเมล็ดไม่งอก ต้นผิดรูป โรคเน่าคอดิน
+        และความเสียหายระหว่างขนย้าย จึงไม่ควรเพาะเพียง 1,000 เมล็ด
+      </p>
+
+      <div class="callout green">
+        <strong>จำนวนที่แนะนำ:</strong> เพาะประมาณ <strong>1,250–1,300 เมล็ด</strong>
+        หรือใช้ถาด 72 หลุมจำนวน <strong>18 ถาด</strong> รวม 1,296 หลุม
+      </div>
+
+      <p class="small">
+        หากเมล็ดระบุอัตรางอกเพียง 85% การใช้ 1,000 เมล็ดอาจได้ต้นงอกประมาณ 850 ต้นก่อนการคัดกล้า จึงไม่เพียงพอ
+      </p>
+    </section>
+
+    <section>
+      <h2>2. รายการของที่ต้องซื้อ</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>รายการ</th>
+            <th>สเปกที่แนะนำ</th>
+            <th class="num">จำนวน</th>
+            <th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>เมล็ดพันธุ์ฟักทอง</td>
+            <td>ล็อตเดียวกัน มีวันผลิต/หมดอายุ และระบุเปอร์เซ็นต์งอก</td>
+            <td class="num">1,250–1,300 เมล็ด</td>
+            <td>ควรซื้อเผื่อซ่อมแปลงอีกเล็กน้อย</td>
+          </tr>
+          <tr>
+            <td>ถาดเพาะกล้า</td>
+            <td>72 หลุม แบบหนา ระบายน้ำดี</td>
+            <td class="num">18 ถาด</td>
+            <td>ฟักทองควรใช้หลุมค่อนข้างใหญ่ ไม่ควรใช้ถาดหลุมเล็กมาก</td>
+          </tr>
+          <tr>
+            <td>วัสดุเพาะ</td>
+            <td>พีทมอสหรือวัสดุเพาะสำเร็จรูป สะอาด โปร่ง</td>
+            <td class="num">ประมาณ 90–100 ลิตร</td>
+            <td>ปริมาณจริงขึ้นอยู่กับขนาดหลุมและการอัดวัสดุ</td>
+          </tr>
+          <tr>
+            <td>หัวฉีดน้ำ</td>
+            <td>ละอองฝอยละเอียด ปรับแรงได้</td>
+            <td class="num">1 ชุด</td>
+            <td>ลดปัญหาวัสดุเพาะกระเด็นและเมล็ดลอย</td>
+          </tr>
+          <tr>
+            <td>สแลนกรองแสง</td>
+            <td>ประมาณ 50–60%</td>
+            <td class="num">ตามพื้นที่</td>
+            <td>ใช้เมื่อพื้นที่เพาะโดนแดดจัดหรือฝนกระแทก</td>
+          </tr>
+          <tr>
+            <td>ป้ายและปากกา</td>
+            <td>กันน้ำ</td>
+            <td class="num">1 ชุด</td>
+            <td>เขียนวันที่เพาะ พันธุ์ และหมายเลขถาด</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout amber">
+        <strong>ยังไม่จำเป็นต้องซื้อ:</strong> ปุ๋ยเร่งราก ปุ๋ยเร่งกล้า และสารป้องกันเชื้อราเพื่อใส่อัตโนมัติ
+        เพราะกล้าอยู่ในถาดเพียงประมาณ 10–13 วัน การควบคุมน้ำ ความสะอาด และอากาศถ่ายเทสำคัญกว่า
+      </div>
+    </section>
+
+    <section>
+      <h2>3. สเปกที่ควรเลือกบน Shopee</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>เมล็ดพันธุ์</h3>
+          <ul>
+            <li>ต้องเป็นเมล็ดพันธุ์สำหรับปลูก ไม่ใช่เมล็ดสำหรับรับประทาน</li>
+            <li>เลือกชื่อพันธุ์ให้ตรงกันทุกซอง</li>
+            <li>ตรวจเลขล็อต วันหมดอายุ และเปอร์เซ็นต์งอก</li>
+            <li>ถ้าเป็นเมล็ดเคลือบสาร ไม่ควรแช่น้ำโดยไม่อ่านฉลาก</li>
+            <li>หลีกเลี่ยงเมล็ดแบ่งขายที่ไม่ระบุแหล่งผลิต</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>ถาดเพาะ 72 หลุม</h3>
+          <ul>
+            <li>เลือกแบบหนา ใช้ซ้ำได้ ไม่บิดตัวง่าย</li>
+            <li>หลุมต้องลึกพอให้รากเดินและก้อนวัสดุไม่แตก</li>
+            <li>มีรูระบายน้ำชัดเจนทุกหลุม</li>
+            <li>ขนาดถาดควรพอดีกับโต๊ะหรือพื้นที่เพาะ</li>
+            <li>ไม่จำเป็นต้องซื้อฝาครอบใสสำหรับพื้นที่อากาศร้อน</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>วัสดุเพาะ</h3>
+          <ul>
+            <li>ใช้พีทมอสสูตรเพาะเมล็ดหรือวัสดุเพาะสำเร็จรูป</li>
+            <li>เนื้อวัสดุต้องละเอียด โปร่ง และอุ้มน้ำพอดี</li>
+            <li>ไม่ใช้ดินสวนหรือปุ๋ยคอกสดในถาด</li>
+            <li>ตรวจว่ามีปุ๋ยเริ่มต้นผสมมาแล้วหรือไม่</li>
+            <li>ซื้อให้พอประมาณ 90–100 ลิตร</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>อุปกรณ์ให้น้ำและบังแดด</h3>
+          <ul>
+            <li>หัวฉีดต้องให้น้ำเป็นฝอย ไม่ใช่สายแรง</li>
+            <li>พื้นที่เพาะควรป้องกันฝนกระแทก</li>
+            <li>สแลน 50–60% เหมาะสำหรับช่วงเริ่มงอก</li>
+            <li>หลังงอกต้องเพิ่มแสงเพื่อไม่ให้ต้นยืด</li>
+            <li>ถาดควรวางบนโต๊ะที่ได้ระดับ ไม่สัมผัสดิน</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. ขั้นตอนเพาะกล้า</h2>
+      <div class="timeline">
+        <div class="step">
+          <strong>เตรียมถาดและพื้นที่</strong>
+          <p>ล้างถาด วางบนโต๊ะหรือชั้นยกสูง ตรวจรูระบายน้ำ และจัดพื้นที่ให้กันฝนกระแทกได้</p>
+        </div>
+
+        <div class="step">
+          <strong>เตรียมวัสดุเพาะ</strong>
+          <p>เติมน้ำให้วัสดุชื้นทั่ว แต่ไม่แฉะ เมื่อบีบแล้วจับตัวได้และไม่มีน้ำไหลออกมาก</p>
+        </div>
+
+        <div class="step">
+          <strong>บรรจุถาด</strong>
+          <p>เติมวัสดุให้เต็มหลุม เคาะถาดเบา ๆ และเติมซ้ำ ไม่อัดแน่นจนเกินไป</p>
+        </div>
+
+        <div class="step">
+          <strong>หยอดเมล็ด</strong>
+          <p>หยอด 1 เมล็ดต่อหลุม ลึกประมาณ 1.5–2 เซนติเมตร แล้วกลบด้วยวัสดุเพาะบาง ๆ</p>
+        </div>
+
+        <div class="step">
+          <strong>ให้น้ำหลังเพาะ</strong>
+          <p>ฉีดน้ำแบบฝอยละเอียดให้ชื้นทั่ว วางถาดในร่มโปร่งหรือใต้สแลนช่วงก่อนงอก</p>
+        </div>
+
+        <div class="step">
+          <strong>ดูแลหลังงอก</strong>
+          <p>เมื่อเริ่มงอกประมาณวันที่ 3–5 ให้เพิ่มแสงทันที ตรวจถาดเช้าและบ่าย และหลีกเลี่ยงน้ำขัง</p>
+        </div>
+
+        <div class="step">
+          <strong>คัดกล้าและฝึกแดด</strong>
+          <p>วันที่ 7–9 คัดต้นผิดรูปหรือเป็นโรคออก จากนั้นเพิ่มแดดและลมทีละน้อย 3–5 วันก่อนย้ายปลูก</p>
+        </div>
+
+        <div class="step">
+          <strong>ย้ายลงแปลง</strong>
+          <p>ย้ายเมื่ออายุประมาณ 10–13 วัน มีใบจริง 1–2 ใบ รากจับก้อนพอดี และยังไม่วนแน่น</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. การให้น้ำ ปุ๋ย และการควบคุมโรค</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>การให้น้ำ</h3>
+          <ul>
+            <li>ตรวจความชื้นอย่างน้อยเช้าและบ่าย</li>
+            <li>ให้น้ำเมื่อผิววัสดุเริ่มหมาด ไม่กำหนดตายตัวว่าวันละกี่ครั้ง</li>
+            <li>รดให้ชื้นทั่วก้อนและให้น้ำส่วนเกินระบายออก</li>
+            <li>ควรรดช่วงเช้าหรือบ่ายต้น</li>
+            <li>หลีกเลี่ยงการเปียกแฉะค้างคืน</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>การให้ปุ๋ย</h3>
+          <ul>
+            <li>ตรวจฉลากวัสดุเพาะก่อนว่ามีปุ๋ยเริ่มต้นหรือไม่</li>
+            <li>ถ้าใบเขียวปกติและอายุเพาะสั้น ไม่จำเป็นต้องให้ปุ๋ยเพิ่ม</li>
+            <li>ถ้าวัสดุไม่มีธาตุอาหารและใบเริ่มซีด ให้ใช้ปุ๋ยละลายน้ำประมาณ ¼–½ ของอัตราฉลาก</li>
+            <li>ไม่ใส่ปุ๋ยเข้มข้นก่อนย้ายปลูก</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>ป้องกันโรคเน่าคอดิน</h3>
+          <ul>
+            <li>ใช้วัสดุเพาะใหม่และสะอาด</li>
+            <li>ล้างถาดก่อนใช้งาน</li>
+            <li>ไม่วางถาดสัมผัสดิน</li>
+            <li>จัดอากาศถ่ายเทและไม่ให้น้ำมากเกินไป</li>
+            <li>แยกต้นที่โคนช้ำ คอด หรือล้มออกทันที</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>ลักษณะกล้าพร้อมปลูก</h3>
+          <ul>
+            <li>มีใบจริง 1–2 ใบ</li>
+            <li>ลำต้นสั้น อวบ และไม่ยืด</li>
+            <li>ใบเขียวสม่ำเสมอ</li>
+            <li>รากขาวและจับวัสดุเป็นก้อน</li>
+            <li>ไม่มีเพลี้ย จุดด่าง หรืออาการโคนเน่า</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>6. ต้นทุนโดยประมาณจาก Shopee</h2>
+
+      <div class="budget-grid">
+        <div class="budget-box">
+          <h3>แผนประหยัด</h3>
+          <table>
+            <tbody>
+              <tr><td>เมล็ดรวมประมาณ 1,300 เมล็ด</td><td class="num">1,047 บาท</td></tr>
+              <tr><td>ถาด 72 หลุม 18 ถาด</td><td class="num">468 บาท</td></tr>
+              <tr><td>พีทมอสประมาณ 100 ลิตร</td><td class="num">664 บาท</td></tr>
+              <tr><td>หัวฉีดน้ำฝอย</td><td class="num">89 บาท</td></tr>
+              <tr><td>สแลนและอุปกรณ์จิปาถะ</td><td class="num">315 บาท</td></tr>
+            </tbody>
+          </table>
+          <div class="budget-total">ประมาณ 2,583 บาท</div>
+          <p class="small">ก่อนค่าส่ง หรือประมาณ 2.58 บาทต่อต้นเป้าหมาย</p>
+        </div>
+
+        <div class="budget-box recommended">
+          <h3>แผนแนะนำ</h3>
+          <table>
+            <tbody>
+              <tr><td>เมล็ด 1,000 เมล็ด 2 ซอง</td><td class="num">1,638 บาท</td></tr>
+              <tr><td>ถาด 72 หลุมแบบหนา 18 ถาด</td><td class="num">630 บาท</td></tr>
+              <tr><td>พีทมอสประมาณ 100 ลิตร</td><td class="num">664 บาท</td></tr>
+              <tr><td>หัวฉีดน้ำฝอย</td><td class="num">89 บาท</td></tr>
+              <tr><td>สแลนและอุปกรณ์จิปาถะ</td><td class="num">315 บาท</td></tr>
+            </tbody>
+          </table>
+          <div class="budget-total">ประมาณ 3,336 บาท</div>
+          <p class="small">ก่อนค่าส่ง หรือประมาณ 3.34 บาทต่อต้นเป้าหมาย และมีเมล็ดเหลือสำรอง</p>
+        </div>
+      </div>
+
+      <div class="callout amber">
+        <strong>งบที่ควรเตรียมจริงรวมค่าส่ง:</strong><br>
+        แผนประหยัดประมาณ <strong>2,900–3,400 บาท</strong><br>
+        แผนแนะนำประมาณ <strong>3,650–4,150 บาท</strong>
+      </div>
+
+      <p class="small">
+        ราคาเป็นราคาตัวอย่างจากการค้นหา Shopee และอาจเปลี่ยนตามร้าน ตัวเลือกสินค้า จังหวัดปลายทาง ค่าส่ง และคูปอง
+        ควรตรวจราคาหน้าชำระเงินอีกครั้งก่อนสั่งซื้อ
+      </p>
+    </section>
+
+    <section>
+      <h2>7. Checklist ก่อนเริ่มเพาะ</h2>
+      <ul class="checklist">
+        <li>เมล็ดมีจำนวนอย่างน้อย 1,250–1,300 เมล็ด</li>
+        <li>ตรวจชื่อพันธุ์ เลขล็อต และวันหมดอายุแล้ว</li>
+        <li>ถาด 72 หลุมครบ 18 ถาด</li>
+        <li>วัสดุเพาะมีอย่างน้อยประมาณ 90–100 ลิตร</li>
+        <li>ถาดและอุปกรณ์ผ่านการล้างแล้ว</li>
+        <li>พื้นที่เพาะกันฝนและมีอากาศถ่ายเท</li>
+        <li>มีหัวฉีดน้ำแบบฝอยละเอียด</li>
+        <li>มีป้ายวันที่เพาะและหมายเลขถาด</li>
+        <li>แปลงปลูกจะพร้อมภายใน 10–13 วัน</li>
+        <li>เตรียมแรงงานสำหรับย้ายปลูกช่วงเย็น</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>8. ข้อผิดพลาดที่ควรหลีกเลี่ยง</h2>
+      <div class="callout red">
+        <ul>
+          <li>เพาะเพียง 1,000 เมล็ดโดยไม่เผื่ออัตรางอก</li>
+          <li>ใช้ถาดหลุมเล็กเกินไปจนรากแน่นเร็ว</li>
+          <li>แช่เมล็ดเคลือบสารโดยไม่ตรวจฉลาก</li>
+          <li>ใช้ดินสวนหรือปุ๋ยคอกสดในถาด</li>
+          <li>รดน้ำจนแฉะและวางถาดติดพื้นดิน</li>
+          <li>ให้ปุ๋ยเข้มข้นเพื่อเร่งต้นให้โตเร็ว</li>
+          <li>ปล่อยกล้าค้างถาดจนมีใบจริง 3–4 ใบหรือรากวน</li>
+          <li>ย้ายปลูกกลางแดดจัดโดยไม่ฝึกกล้า</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      เอกสารฉบับนี้จัดทำเพื่อวางแผนเพาะกล้าฟักทองประมาณ 1,000 ต้น โดยเน้นการลดความเสียหายและควบคุมต้นทุน
+      ปรับปรุงข้อมูลล่าสุด: 2 สิงหาคม 2026
+    </footer>
+  </main>
+</body>
+</html>
